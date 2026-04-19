@@ -1,9 +1,7 @@
 import Link from "next/link";
-import { RegisterForm } from "./register-form";
-import { GoogleButton } from "@/components/ui/google-button";
-import { Separator } from "@/components/ui/separator";
+import { ForgotPasswordForm } from "./forgot-password-form";
 
-export default function RegisterPage() {
+export default function ForgotPasswordPage() {
   return (
     <div className="space-y-8">
       <header
@@ -11,36 +9,28 @@ export default function RegisterPage() {
         style={{ animation: "var(--animate-fade-in-up)" }}
       >
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-200">
-          Primer día
+          Recuperar acceso
         </p>
         <h2 className="font-display text-4xl leading-[1.02] tracking-tight text-ink-50">
-          Tu próximo <em className="text-mineral-300 not-italic">PR</em> empieza aquí.
+          Volvamos a la <em className="text-mineral-300 not-italic">barra</em>.
         </h2>
         <p className="text-ink-200 text-[15px] leading-relaxed">
-          Crea una cuenta y empieza a registrar tus entrenamientos.
+          Introduce tu email y te enviaremos un enlace para restablecer la contraseña.
         </p>
       </header>
 
-      <div
-        className="space-y-4"
-        style={{ animation: "var(--animate-fade-in-up)", animationDelay: "150ms" }}
-      >
-        <GoogleButton label="Registrarse con Google" />
-        <Separator />
-      </div>
-
-      <RegisterForm />
+      <ForgotPasswordForm />
 
       <p
         className="text-center text-[14px] text-ink-200"
         style={{ animation: "var(--animate-fade-in-up)", animationDelay: "400ms" }}
       >
-        ¿Ya tienes cuenta?{" "}
+        ¿Lo recordaste?{" "}
         <Link
           href="/login"
           className="text-ink-50 font-medium hover:text-mineral-300 transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-mineral-300"
         >
-          Entrar
+          Volver a entrar
         </Link>
       </p>
     </div>

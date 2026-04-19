@@ -69,3 +69,85 @@ export const signOutAction = async () => {
   await supabase.auth.signOut();
   redirect("/login");
 };
+
+export const signInWithGoogleAction = async (
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> => {
+  const redirectTo = String(formData.get("redirectTo") ?? "/dashboard");
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${getOrigin()}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+    },
+  });
+
+  if (error || !data?.url) {
+    return { error: "No hemos podido conectar con Google. Inténtalo de nuevo." };
+  }
+
+  redirect(data.url);
+};
+
+export const requestPasswordResetAction = async (
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> => {
+  const email = String(formData.get("email") ?? "").trim();
+
+  if (!email) {
+    return { error: "Introduce el email de tu cuenta." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${getOrigin()}/auth/callback?next=${encodeURIComponent("/update-password")}`,
+  });
+
+  if (error) {
+    return { error: "No hemos podido enviar el email. Inténtalo de nuevo." };
+  }
+
+  return {
+    success:
+      "Si ese email está registrado, te enviaremos un enlace para restablecer tu contraseña.",
+  };
+};
+
+export const updatePasswordAction = async (
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> => {
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (password.length < 8) {
+    return { error: "La contraseña debe tener al menos 8 caracteres." };
+  }
+  if (password !== confirm) {
+    return { error: "Las contraseñas no coinciden." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "El enlace ha expirado. Solicita uno nuevo." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    return { error: "No hemos podido actualizar la contraseña. Inténtalo de nuevo." };
+  }
+
+  redirect("/dashboard");
+};

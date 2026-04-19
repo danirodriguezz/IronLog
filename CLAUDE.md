@@ -38,7 +38,7 @@
 ## 📦 Installation Notes
 
 - Tailwind setup with `postcss`
-- shadcn/ui installed with `npx shadcn-ui@latest init`
+- shadcn/ui installed with `npm shadcn-ui@latest init`
 - React Query initialized with `<QueryClientProvider>`
 
 ## ⚙️ Dev Commands
