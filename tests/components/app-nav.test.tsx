@@ -27,14 +27,30 @@ describe("AppNav", () => {
     expect(link).not.toHaveAttribute("aria-current");
   });
 
-  it("renders placeholder sections as disabled (not links)", () => {
+  it("renders upcoming sections as disabled (not links)", () => {
     usePathname.mockReturnValue("/dashboard");
     render(<AppNav />);
 
-    for (const label of ["Rutinas", "Entrenar", "Progreso"]) {
+    for (const label of ["Entrenar", "Progreso"]) {
       const el = screen.getByText(label);
       expect(el.tagName).toBe("SPAN");
       expect(el).toHaveAttribute("aria-disabled");
     }
+  });
+
+  it("renders Rutinas as a link", () => {
+    usePathname.mockReturnValue("/dashboard");
+    render(<AppNav />);
+
+    const link = screen.getByRole("link", { name: "Rutinas" });
+    expect(link).toHaveAttribute("href", "/rutinas");
+  });
+
+  it("marks Rutinas as current when inside the routines section", () => {
+    usePathname.mockReturnValue("/rutinas/abc-123");
+    render(<AppNav />);
+
+    const link = screen.getByRole("link", { name: "Rutinas" });
+    expect(link).toHaveAttribute("aria-current", "page");
   });
 });

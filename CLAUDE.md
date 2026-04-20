@@ -1,118 +1,135 @@
 @AGENTS.md
 
-## 🛠️ Development Environment
+# IronLog — Project Context
 
-- **Language**: TypeScript (`^5.0.0`)
-- **Framework**: Next.js (App Router)
-- **Styling**: Tailwind CSS
-- **Component Library**: shadcn/ui
-- **Data Fetching**: React Query (TanStack)
-- **Testing**: Jest + React Testing Library
-- **Linting**: ESLint with `@typescript-eslint`
-- **Formatting**: Prettier
-- **Package Manager**: `npm` (preferred)
+Social fitness-tracking app. Users design **routines** (templates), then run **sessions** (actual workouts) made of **session_exercises** and **sets**. A social layer via `follows` exposes sessions/sets of followed users.
 
-## 📂 Recommended Project Structure
+## 🛠️ Stack (actual, not aspirational)
 
-```warp-runnable-command
+- **Language**: TypeScript `^5`
+- **Framework**: Next.js `16.2.4` (App Router, React `19.2.4`, Turbopack)
+- **Backend / Auth / DB**: Supabase (`@supabase/ssr`, `@supabase/supabase-js`)
+- **Styling**: Tailwind CSS v4 (via `@tailwindcss/postcss`, no `tailwind.config.*` — theme lives in [app/globals.css](app/globals.css) inside `@theme {}`)
+- **Data mutations**: Next.js **Server Actions** (`"use server"`) + `revalidatePath`. No React Query, no tRPC, no custom API routes.
+- **Forms**: `useActionState` + `useFormStatus` from `react` / `react-dom`
+- **Testing**: **Vitest** + `@testing-library/react` + `jsdom`. No Jest, no MSW.
+- **Linting**: ESLint (`eslint-config-next`, flat config in [eslint.config.mjs](eslint.config.mjs))
+- **Package manager**: `npm`
+
+> ⚠️ **Do not introduce** shadcn/ui, React Query, Jest, MSW, Prettier, or `/api` routes unless explicitly asked. They're not in this project.
+
+## 📂 Actual project structure
+
+```
 .
-├── app/                     # App Router structure
-│   ├── layout.tsx
-│   ├── page.tsx
-│   ├── api/
-├── components/              # UI components (shadcn or custom)
-├── hooks/                   # Custom React hooks
-├── lib/                     # Client helpers, API wrappers, etc.
-├── styles/                  # Tailwind customizations
-├── tests/                   # Unit and integration tests
-├── public/
-├── .eslintrc.js
-├── tailwind.config.ts
-├── tsconfig.json
-├── postcss.config.js
-├── next.config.js
-├── package.json
-└── README.md
+├── app/
+│   ├── layout.tsx                 # root, fonts + metadata
+│   ├── page.tsx                   # public landing
+│   ├── globals.css                # Tailwind v4 @theme tokens, aurora/grain, hairline util
+│   ├── (auth)/                    # route group — unauthenticated pages
+│   │   ├── layout.tsx
+│   │   ├── actions.ts             # signIn/signUp/signOut/reset/updatePassword/google
+│   │   ├── login/ register/ forgot-password/ update-password/
+│   ├── (app)/                     # route group — authenticated shell
+│   │   ├── layout.tsx             # redirects to /login if no session, renders header + AppNav
+│   │   ├── _components/app-nav.tsx
+│   │   ├── dashboard/
+│   │   └── rutinas/
+│   │       ├── page.tsx           # list + create form
+│   │       ├── actions.ts         # create/delete routine, add/remove routine_exercise
+│   │       ├── _components/create-routine-form.tsx
+│   │       └── [id]/
+│   │           ├── page.tsx       # detail + exercise list
+│   │           └── _components/   # add-exercise-form, remove-exercise-button, delete-routine-button
+│   └── auth/callback/             # Supabase OAuth / email-link callback
+├── components/
+│   ├── brand/logo.tsx
+│   └── ui/                        # field, submit-button, google-button, logout-button, separator
+├── lib/supabase/
+│   ├── client.ts                  # createBrowserClient (client components)
+│   ├── server.ts                  # createServerClient (RSC / server actions) — async, awaits cookies()
+│   └── middleware.ts              # session-refresh helper used by proxy.ts
+├── proxy.ts                       # Next 16 proxy (replaces middleware.ts) — refreshes Supabase session
+├── supabase/migrations/           # SQL migrations (source of truth for schema)
+├── tests/                         # vitest (actions.test.ts, middleware.test.ts, components/)
+├── next.config.ts
+├── postcss.config.mjs
+├── vitest.config.mts
+└── tsconfig.json
 ```
 
-## 📦 Installation Notes
+## 🗄️ Database (see [supabase/migrations/20260420134655_initial_schema.sql](supabase/migrations/20260420134655_initial_schema.sql))
 
-- Tailwind setup with `postcss`
-- shadcn/ui installed with `npm shadcn-ui@latest init`
-- React Query initialized with `<QueryClientProvider>`
+Tables: `profiles`, `follows`, `exercises` (global catalog, seeded), `routines`, `routine_exercises`, `sessions`, `session_exercises`, `sets`.
 
-## ⚙️ Dev Commands
+Key design decisions:
+- **`user_id` is denormalized** down to `routine_exercises`, `session_exercises`, and `sets` so RLS never joins. `BEFORE INSERT` triggers fill it from the parent — **do not set `user_id` manually** on insert; it'll be overwritten (you *can* pass it, but rely on the trigger).
+- `sets` also denormalize `exercise_id` from `session_exercises` via trigger.
+- RLS is enabled on every table and all `auth.uid()` calls are wrapped in `(SELECT auth.uid())` for per-statement caching. Client queries can omit `.eq("user_id", uid)` — RLS handles it.
+- `exercise_type` enum = `strength | cardio | isometric | bodyweight`. Target fields and PR metric branch on this:
+  - `strength` → `weight_kg`
+  - `bodyweight` → `reps`
+  - `isometric` → `duration_seconds`
+  - `cardio` → `distance_meters`
+- `routine_exercises` has `UNIQUE (routine_id, order_index)` — compute `max + 1` before insert.
+- `sets.is_pr` is recomputed by a `BEFORE INSERT` trigger; don't set it manually. Previous PRs of the same `(user, exercise)` get demoted.
+- `handle_new_user()` trigger auto-creates a `profiles` row on `auth.users` insert, retrying on username collisions.
 
-- **Dev server**: `npm run dev`
-- **Build**: `npm run build`
-- **Start**: `npm run start`
-- **Lint**: `npm run lint`
-- **Format**: `npm run format`
-- **Test**: `npm run test`
+## 🔐 Auth flow
 
-## 🧠 Claude Code Usage
+- Supabase SSR cookies. Session refresh happens in [proxy.ts](proxy.ts) via [lib/supabase/middleware.ts](lib/supabase/middleware.ts).
+- `(app)/layout.tsx` calls `supabase.auth.getUser()` and redirects to `/login` if absent. Pages inside `(app)` can assume an authenticated user.
+- OAuth/magic-link return to `/auth/callback?next=...`.
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` are the required env vars.
 
-- Use `claude /init` to create this file
-- Run `claude` in the root of the repo
-- Prompt with: `think hard`, `ultrathink` for deep plans
-- Compact with `claude /compact`
-- Use `claude /permissions` to whitelist safe tools
+## ⚙️ Commands
 
-## 📌 Prompt Examples
+- `npm run dev` — dev server
+- `npm run build` / `npm run start`
+- `npm run lint`
+- `npm run test` (vitest run) / `npm run test:watch`
 
-```warp-runnable-command
-Claude, refactor `useUser.ts` to use React Query.
-Claude, scaffold a new `Button.tsx` using shadcn/ui and Tailwind.
-Claude, generate the Tailwind styles for this mockup screenshot.
-Claude, build an API route handler for POST /api/user.
-Claude, create a test for `ProfileCard.tsx` using RTL.
-```
+No `format` script — formatting is whatever the editor enforces.
 
-## 🧪 Testing Practices
+## 🎨 Design system
 
-- **Testing Library**: `@testing-library/react`
-- **Mocking**: `msw`, `vi.mock()`
-- **Test command**: `npm run test`
-- Organize tests in `/tests` or co-located with components
+Dark, editorial, Apple-grade. Tokens defined in [app/globals.css](app/globals.css):
+- Neutrals: `ink-50 … ink-950`
+- Brand accent (green): `mineral-50 … mineral-700` — use for primary CTA accents, eyebrows, focus rings
+- Danger / warm accent: `ember-400`, `ember-500` — destructive actions, errors
+- Fonts: `font-display` (serif, Instrument) for hero/headlines, `font-sans` (Geist) for body, `font-mono` (Geist Mono) for eyebrows/labels — typically `font-mono text-[10-11px] uppercase tracking-[0.22em]`.
+- Utilities: `.hairline` (1px subtle border), `.aurora` (animated backdrop), `.grid-texture`.
+- Radii: prefer `rounded-2xl` for cards, `rounded-[14px]` for inputs/buttons, `rounded-full` for pills.
 
-## 🧱 Component Guidelines
+Reuse [components/ui/field.tsx](components/ui/field.tsx) and [components/ui/submit-button.tsx](components/ui/submit-button.tsx) for forms — they handle floating labels, pending state, and the themed look.
 
-- Use `shadcn/ui` components by default for form elements, cards, dialogs, etc.
-- Style components with Tailwind utility classes
-- Co-locate CSS modules or component-specific styling in the same directory
+## 🧩 Conventions
 
-## ⚛️ React Query Patterns
+- **Route groups**: `(auth)` for logged-out, `(app)` for logged-in. Co-locate components in `_components/` inside the route segment.
+- **Server Components by default**; only add `"use client"` when you need hooks / interactivity.
+- **Server Actions** live in an `actions.ts` next to the page that uses them. Signature for `useActionState`-driven forms:
+  ```ts
+  type ActionState = { error?: string; success?: string } | undefined;
+  export const someAction = async (_prev: ActionState, formData: FormData): Promise<ActionState> => { … }
+  ```
+  For imperative/button-only actions, accept `formData: FormData` directly.
+- **Dynamic route params are promises** in Next 16: `params: Promise<{ id: string }>` → `const { id } = await params`.
+- **Arrow functions everywhere**, annotate return types (`React.ReactElement`, `Promise<…>`).
+- **Destructure props**, avoid `any`, prefer `unknown` + narrowing.
+- **Import order**: react → next → third-party → `@/…` local.
+- **Copy is in Spanish** (the product UI). Error / success strings are user-facing Spanish.
+- **No comments unless non-obvious.** Never add “what the code does” comments.
 
-- Set up `QueryClient` in `app/layout.tsx`
-- Use `useQuery`, `useMutation`, `useInfiniteQuery` from `@tanstack/react-query`
-- Place API logic in `/lib/api/` and call via hooks
-- Use query keys prefixed by domain: `['user', id]`
+## 🧪 Testing
 
-## 📝 Code Style Standards
+- Vitest config in [vitest.config.mts](vitest.config.mts), setup in [tests/setup.ts](tests/setup.ts).
+- Tests live under `tests/` (not co-located). Examples exist for server actions and the proxy.
+- Mock Supabase with `vi.mock("@/lib/supabase/server", …)` — see [tests/actions.test.ts](tests/actions.test.ts) as the reference pattern.
 
-- Prefer arrow functions
-- Annotate return types
-- Always destructure props
-- Avoid `any` type, use `unknown` or strict generics
-- Group imports: react → next → libraries → local
+## 🚫 Don'ts
 
-## 🔍 Documentation & Onboarding
-
-- Each component and hook should include a short comment on usage
-- Document top-level files (like `app/layout.tsx`) and configs
-- Keep `README.md` up to date with getting started, design tokens, and component usage notes
-
-## 🔐 Security
-
-- Validate all server-side inputs (API routes)
-- Use HTTPS-only cookies and CSRF tokens when applicable
-- Protect sensitive routes with middleware or session logic
-
-## 🧩 Custom Slash Commands
-
-Stored in `.claude/commands/`:
-
-- `/generate-hook`: Scaffold a React hook with proper types and test
-- `/wrap-client-component`: Convert server to client-side with hydration-safe boundary
-- `/update-tailwind-theme`: Modify Tailwind config and regenerate tokens
-- `/mock-react-query`: Set up MSW mocking for all useQuery keys
+- Don't bypass RLS by adding `user_id` filters redundantly — RLS already enforces ownership.
+- Don't write to `user_id` on `routine_exercises` / `session_exercises` / `sets` expecting it to stick; the trigger overrides it from the parent.
+- Don't add `tailwind.config.ts` — Tailwind v4 reads tokens from `@theme` in CSS.
+- Don't create `/api/…` routes for things Server Actions can do.
+- Don't install shadcn/ui / React Query / Jest unless the user explicitly asks.
