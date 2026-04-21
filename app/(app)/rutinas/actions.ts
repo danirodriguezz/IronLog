@@ -12,9 +12,20 @@ export const createRoutineAction = async (
 ): Promise<ActionState> => {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
+  const rawDay = String(formData.get("dayOfWeek") ?? "").trim();
+  const redirectTo = String(formData.get("redirectTo") ?? "").trim();
 
   if (!name) {
     return { error: "Pon un nombre a tu rutina." };
+  }
+
+  let dayOfWeek: number | null = null;
+  if (rawDay !== "") {
+    const parsed = Number(rawDay);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 7) {
+      return { error: "Día no válido." };
+    }
+    dayOfWeek = parsed;
   }
 
   const supabase = await createClient();
@@ -26,12 +37,25 @@ export const createRoutineAction = async (
     return { error: "Tu sesión ha expirado. Vuelve a iniciar sesión." };
   }
 
+  if (dayOfWeek !== null) {
+    const { error: clearError } = await supabase
+      .from("routines")
+      .update({ day_of_week: null })
+      .eq("user_id", user.id)
+      .eq("day_of_week", dayOfWeek);
+
+    if (clearError) {
+      return { error: "No hemos podido liberar el día." };
+    }
+  }
+
   const { data, error } = await supabase
     .from("routines")
     .insert({
       user_id: user.id,
       name,
       description: description || null,
+      day_of_week: dayOfWeek,
     })
     .select("id")
     .single();
@@ -41,6 +65,9 @@ export const createRoutineAction = async (
   }
 
   revalidatePath("/rutinas");
+  if (redirectTo === "list") {
+    return { success: "Rutina creada." };
+  }
   redirect(`/rutinas/${data.id}`);
 };
 
@@ -121,6 +148,58 @@ export const addRoutineExerciseAction = async (
 
   revalidatePath(`/rutinas/${routineId}`);
   return { success: "Ejercicio añadido." };
+};
+
+export const assignRoutineToDayAction = async (formData: FormData): Promise<ActionState> => {
+  const routineId = String(formData.get("routineId") ?? "");
+  const rawDay = String(formData.get("day") ?? "").trim();
+
+  if (!routineId) {
+    return { error: "Rutina no válida." };
+  }
+
+  let day: number | null = null;
+  if (rawDay !== "") {
+    const parsed = Number(rawDay);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 7) {
+      return { error: "Día no válido." };
+    }
+    day = parsed;
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Tu sesión ha expirado." };
+  }
+
+  if (day !== null) {
+    const { error: clearError } = await supabase
+      .from("routines")
+      .update({ day_of_week: null })
+      .eq("user_id", user.id)
+      .eq("day_of_week", day)
+      .neq("id", routineId);
+
+    if (clearError) {
+      return { error: "No hemos podido liberar el día." };
+    }
+  }
+
+  const { error } = await supabase
+    .from("routines")
+    .update({ day_of_week: day })
+    .eq("id", routineId);
+
+  if (error) {
+    return { error: "No hemos podido mover la rutina." };
+  }
+
+  revalidatePath("/rutinas");
+  return { success: "Rutina actualizada." };
 };
 
 export const removeRoutineExerciseAction = async (formData: FormData): Promise<void> => {
