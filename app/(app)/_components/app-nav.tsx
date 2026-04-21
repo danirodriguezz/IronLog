@@ -13,7 +13,7 @@ const ITEMS: readonly NavItem[] = [
   { href: "/dashboard", label: "Panel" },
   { href: "/rutinas", label: "Rutinas" },
   { href: "/entrenar", label: "Entrenar" },
-  { href: "/progreso", label: "Progreso", disabled: true },
+  { href: "/progreso", label: "Progreso" },
 ] as const;
 
 export const AppNav = (): React.ReactElement => {

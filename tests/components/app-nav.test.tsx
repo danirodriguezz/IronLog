@@ -27,13 +27,14 @@ describe("AppNav", () => {
     expect(link).not.toHaveAttribute("aria-current");
   });
 
-  it("renders upcoming sections as disabled (not links)", () => {
+  it("renders Progreso as an active link", () => {
     usePathname.mockReturnValue("/dashboard");
     render(<AppNav />);
 
-    const el = screen.getByText("Progreso");
-    expect(el.tagName).toBe("SPAN");
-    expect(el).toHaveAttribute("aria-disabled");
+    expect(screen.getByRole("link", { name: "Progreso" })).toHaveAttribute(
+      "href",
+      "/progreso",
+    );
   });
 
   it("renders Rutinas and Entrenar as links", () => {
