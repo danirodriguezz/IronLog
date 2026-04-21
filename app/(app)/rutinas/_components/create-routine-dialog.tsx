@@ -50,7 +50,7 @@ export const CreateRoutineDialog = ({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="hairline inline-flex items-center gap-2 rounded-[14px] bg-ink-900/50 px-4 py-2.5 text-sm text-ink-100 transition-colors hover:bg-ink-800/80 focus:outline-none focus:ring-1 focus:ring-mineral-300"
+        className="hairline inline-flex items-center gap-2 rounded-md bg-ink-900/50 px-4 py-2.5 text-sm text-ink-100 transition-colors hover:bg-ink-800/80 focus:outline-none focus:ring-1 focus:ring-mineral-300"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -61,7 +61,7 @@ export const CreateRoutineDialog = ({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group inline-flex h-11 items-center gap-2 rounded-[14px] bg-ink-50 px-4 text-[14px] font-medium tracking-tight text-ink-950 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-mineral-300 focus:ring-offset-2 focus:ring-offset-ink-950"
+        className="group inline-flex h-11 items-center gap-2 rounded-md bg-ink-50 px-4 text-[14px] font-medium tracking-tight text-ink-950 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-mineral-300 focus:ring-offset-2 focus:ring-offset-ink-950"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
@@ -123,7 +123,7 @@ const DialogContent = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center"
+      className="fixed inset-0 z-100 flex items-end justify-center sm:items-center"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -134,7 +134,7 @@ const DialogContent = ({
         onClick={onClose}
         className="absolute inset-0 cursor-default bg-ink-950/70 backdrop-blur-sm animate-[fadeInUp_.2s_ease-out]"
       />
-      <div className="relative w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-ink-900/95 p-6 shadow-[var(--shadow-card)] backdrop-blur-md hairline animate-[fadeInUp_.3s_var(--ease-spring)]">
+      <div className="relative w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-ink-900/95 p-6 shadow-[--shadow-card] backdrop-blur-md hairline animate-[fadeInUp_.3s_var(--ease-spring)]">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -199,7 +199,7 @@ const DialogContent = ({
             <button
               type="button"
               onClick={onClose}
-              className="h-12 flex-shrink-0 rounded-[14px] px-4 text-sm text-ink-200 transition-colors hover:bg-ink-800/60"
+              className="h-12 shrink-0 rounded-md px-4 text-sm text-ink-200 transition-colors hover:bg-ink-800/60"
             >
               Cancelar
             </button>

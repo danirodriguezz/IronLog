@@ -154,15 +154,15 @@ export const Heatmap = ({ data }: Props): React.ReactElement => {
           ) : null}
         </p>
         <div className="flex items-center gap-1.5">
-          <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-400">Menos</span>
+          <span className="font-mono text-[9px] uppercase tracking-widest text-ink-400">Menos</span>
           {INTENSITY_FILL.map((fill, i) => (
             <span
               key={i}
-              className="block h-[9px] w-[9px] rounded-[2px]"
+              className="block h-2.25 w-2.25 rounded-[2px]"
               style={{ background: fill }}
             />
           ))}
-          <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-ink-400">Más</span>
+          <span className="font-mono text-[9px] uppercase tracking-widest text-ink-400">Más</span>
         </div>
       </div>
     </div>

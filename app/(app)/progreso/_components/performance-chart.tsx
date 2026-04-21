@@ -78,7 +78,7 @@ export const PerformanceChart = ({ points, exerciseType, isPending }: Props): Re
 
   if (points.length === 0) {
     return (
-      <div className="flex h-[200px] items-center justify-center rounded-2xl hairline bg-ink-900/30">
+      <div className="flex h-50 items-center justify-center rounded-2xl hairline bg-ink-900/30">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-400">
           Sin sesiones registradas
         </p>

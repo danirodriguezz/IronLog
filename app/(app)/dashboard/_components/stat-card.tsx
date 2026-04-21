@@ -12,7 +12,7 @@ export const StatCard = ({
   <article className="group relative overflow-hidden rounded-2xl hairline bg-ink-900/50 p-6 transition-colors hover:bg-ink-900/70">
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+      className="pointer-events-none absolute inset-x-0 -top-px h-px bg-linear-to-r from-transparent via-white/20 to-transparent"
     />
     <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-ink-300">
       {eyebrow}

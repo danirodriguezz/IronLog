@@ -131,14 +131,14 @@ const HistorySessionPage = async ({
             <Link
               href={`/entrenar/historial/${prevRes.data.id}`}
               aria-label="Entreno anterior"
-              className="hairline inline-flex h-10 min-w-[44px] items-center justify-center rounded-full bg-ink-900/50 px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
+              className="hairline inline-flex h-10 min-w-11 items-center justify-center rounded-full bg-ink-900/50 px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
             >
               ← Anterior
             </Link>
           ) : (
             <span
               aria-disabled
-              className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-full px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-600"
+              className="inline-flex h-10 min-w-11 items-center justify-center rounded-full px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-600"
             >
               ← Anterior
             </span>
@@ -147,14 +147,14 @@ const HistorySessionPage = async ({
             <Link
               href={`/entrenar/historial/${nextRes.data.id}`}
               aria-label="Entreno siguiente"
-              className="hairline inline-flex h-10 min-w-[44px] items-center justify-center rounded-full bg-ink-900/50 px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
+              className="hairline inline-flex h-10 min-w-11 items-center justify-center rounded-full bg-ink-900/50 px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
             >
               Siguiente →
             </Link>
           ) : (
             <span
               aria-disabled
-              className="inline-flex h-10 min-w-[44px] items-center justify-center rounded-full px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-600"
+              className="inline-flex h-10 min-w-11 items-center justify-center rounded-full px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-600"
             >
               Siguiente →
             </span>

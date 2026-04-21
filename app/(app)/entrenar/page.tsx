@@ -130,7 +130,7 @@ const EntrenarPage = async (): Promise<React.ReactElement> => {
 
       <section className="mt-10">
         {todayRoutine ? (
-          <div className="hairline relative overflow-hidden rounded-2xl bg-gradient-to-br from-mineral-700/20 to-ink-950/80 p-6 sm:p-8">
+          <div className="hairline relative overflow-hidden rounded-2xl bg-linear-to-br from-mineral-700/20 to-ink-950/80 p-6 sm:p-8">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0 space-y-3">
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-mineral-300">
@@ -150,7 +150,7 @@ const EntrenarPage = async (): Promise<React.ReactElement> => {
                 <button
                   type="submit"
                   disabled={Boolean(activeSession) || todayRoutine.exerciseCount === 0}
-                  className="inline-flex min-h-[52px] items-center justify-center rounded-full bg-mineral-300 px-7 font-mono text-[12px] uppercase tracking-[0.22em] text-ink-950 transition-all hover:bg-mineral-200 focus:outline-none focus:ring-2 focus:ring-mineral-400 focus:ring-offset-2 focus:ring-offset-ink-950 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex min-h-13 items-center justify-center rounded-full bg-mineral-300 px-7 font-mono text-[12px] uppercase tracking-[0.22em] text-ink-950 transition-all hover:bg-mineral-200 focus:outline-none focus:ring-2 focus:ring-mineral-400 focus:ring-offset-2 focus:ring-offset-ink-950 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Empezar entreno
                 </button>
@@ -180,7 +180,7 @@ const EntrenarPage = async (): Promise<React.ReactElement> => {
                   <button
                     type="submit"
                     disabled={Boolean(activeSession)}
-                    className="hairline group flex w-full min-h-[60px] items-center justify-between gap-3 rounded-2xl bg-ink-900/40 px-4 py-3 text-left transition-colors hover:bg-ink-900/70 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="hairline group flex w-full min-h-15 items-center justify-between gap-3 rounded-2xl bg-ink-900/40 px-4 py-3 text-left transition-colors hover:bg-ink-900/70 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <div className="min-w-0">
                       <p className="truncate font-display text-base leading-tight">{r.name}</p>

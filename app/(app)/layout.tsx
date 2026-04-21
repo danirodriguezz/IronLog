@@ -21,7 +21,7 @@ const AppLayout = async ({
     <div className="relative min-h-dvh bg-ink-950 text-ink-50">
       <div className="aurora opacity-30" aria-hidden />
       <div className="relative z-10 flex min-h-dvh flex-col">
-        <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-ink-950/70 backdrop-blur-xl">
+        <header className="sticky top-0 z-20 border-b border-white/6 bg-ink-950/70 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
             <Link href="/dashboard" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
               <Logo size={24} />

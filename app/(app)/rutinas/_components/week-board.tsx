@@ -133,9 +133,9 @@ export const WeekBoard = ({ routines, week }: Props): React.ReactElement => {
                 onDrop={(e) => onDrop(e, w.day)}
                 className={[
                   "relative flex flex-col rounded-2xl p-3.5 transition-all duration-200",
-                  "min-h-[176px] lg:min-h-[200px]",
+                  "min-h-44 lg:min-h-50",
                   isHot
-                    ? "bg-mineral-700/15 ring-1 ring-mineral-300 shadow-[var(--shadow-glow)]"
+                    ? "bg-mineral-700/15 ring-1 ring-mineral-300 shadow-[--shadow-glow]"
                     : isToday
                       ? "bg-ink-900/60 ring-1 ring-mineral-400/30"
                       : "bg-ink-900/40 hairline",
@@ -215,14 +215,14 @@ export const WeekBoard = ({ routines, week }: Props): React.ReactElement => {
           onDragEnter={() => onDragEnter("bench")}
           onDragLeave={onDragLeave}
           onDrop={(e) => onDrop(e, null)}
-          className={`mt-5 min-h-[140px] rounded-2xl p-5 transition-all duration-200 ${
+          className={`mt-5 min-h-35 rounded-2xl p-5 transition-all duration-200 ${
             hoveredZone === "bench"
               ? "bg-mineral-700/15 ring-1 ring-mineral-300"
               : "bg-ink-900/30 hairline"
           }`}
         >
           {unassigned.length === 0 ? (
-            <div className="flex min-h-[100px] flex-col items-center justify-center gap-2 text-center">
+            <div className="flex min-h-25 flex-col items-center justify-center gap-2 text-center">
               <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">
                 Todo asignado
               </p>
@@ -283,10 +283,10 @@ const RoutineChip = ({
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       className={[
-        "group relative mt-3 cursor-grab rounded-[14px] p-3 transition-all duration-150 active:cursor-grabbing",
+        "group relative mt-3 cursor-grab rounded-md p-3 transition-all duration-150 active:cursor-grabbing",
         variant === "day"
           ? accent
-            ? "bg-gradient-to-br from-mineral-700/25 to-ink-950/80 ring-1 ring-mineral-400/25"
+            ? "bg-linear-to-br from-mineral-700/25 to-ink-950/80 ring-1 ring-mineral-400/25"
             : "bg-ink-950/70 hairline hover:ring-1 hover:ring-ink-500"
           : "bg-ink-950/60 hairline hover:ring-1 hover:ring-ink-500",
         isDragging ? "opacity-40 scale-[0.98]" : "",
@@ -342,7 +342,7 @@ const ChipMenu = ({
   const close = (): void => onOpenChange(false);
 
   return (
-    <div className="relative flex-shrink-0">
+    <div className="relative shrink-0">
       <button
         type="button"
         aria-label="Mover rutina"
@@ -375,7 +375,7 @@ const ChipMenu = ({
           />
           <div
             role="menu"
-            className="absolute right-0 top-8 z-50 w-44 origin-top-right rounded-xl bg-ink-900/95 p-1.5 shadow-[var(--shadow-card)] backdrop-blur-md hairline"
+            className="absolute right-0 top-8 z-50 w-44 origin-top-right rounded-xl bg-ink-900/95 p-1.5 shadow-[--shadow-card] backdrop-blur-md hairline"
           >
             <p className="px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-ink-400">
               Mover a

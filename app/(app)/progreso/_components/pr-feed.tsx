@@ -31,7 +31,7 @@ const PrRow = ({ entry }: { entry: PrEntry }): React.ReactElement => (
   <article className="group relative flex items-start gap-5 py-5">
     {/* Timeline connector */}
     <div className="relative flex flex-col items-center" aria-hidden>
-      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-mineral-700/40 ring-1 ring-mineral-500/40">
+      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-mineral-700/40 ring-1 ring-mineral-500/40">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
           <path
             d="M5 1L6.12 3.62L9 4.11L6.95 6.08L7.45 9L5 7.62L2.55 9L3.05 6.08L1 4.11L3.88 3.62L5 1Z"
@@ -50,7 +50,7 @@ const PrRow = ({ entry }: { entry: PrEntry }): React.ReactElement => (
       <p className="mt-1 truncate text-[15px] font-medium text-ink-100">{entry.exerciseName}</p>
     </div>
 
-    <div className="flex-shrink-0 text-right">
+    <div className="shrink-0 text-right">
       <p className="font-display text-xl leading-none text-mineral-300">{formatValue(entry)}</p>
       <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-mineral-600">
         Récord personal
@@ -79,14 +79,14 @@ export const PrFeed = ({ entries }: Props): React.ReactElement => {
   return (
     <div className="relative">
       <div
-        className="absolute left-[11px] top-0 bottom-0 w-px"
+        className="absolute left-2.75 top-0 bottom-0 w-px"
         style={{
           background:
             "linear-gradient(to bottom, transparent, var(--color-ink-700) 10%, var(--color-ink-700) 90%, transparent)",
         }}
         aria-hidden
       />
-      <div className="divide-y divide-white/[0.04]" role="list" aria-label="Historial de récords personales">
+      <div className="divide-y divide-white/4" role="list" aria-label="Historial de récords personales">
         {entries.map((e) => (
           <PrRow key={e.id} entry={e} />
         ))}

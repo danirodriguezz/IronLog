@@ -42,7 +42,7 @@ export default function Home() {
           >
             Lift. Log.
             <br />
-            <em className="not-italic bg-gradient-to-r from-mineral-200 via-mineral-300 to-mineral-500 bg-clip-text text-transparent">
+            <em className="not-italic bg-linear-to-r from-mineral-200 via-mineral-300 to-mineral-500 bg-clip-text text-transparent">
               Level up.
             </em>
           </h1>

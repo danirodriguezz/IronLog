@@ -70,7 +70,7 @@ const KpiCard = ({
   <div className="relative overflow-hidden rounded-2xl hairline bg-ink-900/50 p-6">
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+      className="pointer-events-none absolute inset-x-0 -top-px h-px bg-linear-to-r from-transparent via-white/20 to-transparent"
     />
     <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-ink-400">{eyebrow}</p>
     <p className="mt-4 font-display text-4xl leading-none tracking-tight text-ink-50">{value}</p>
@@ -104,7 +104,7 @@ export const ProgressTabs = ({
   return (
     <div className="mt-12">
       {/* Tab nav */}
-      <div className="border-b border-white/[0.06]" role="tablist" aria-label="Secciones de progreso">
+      <div className="border-b border-white/6" role="tablist" aria-label="Secciones de progreso">
         <div className="flex gap-0">
           {TABS.map((t) => {
             const active = tab === t.id;

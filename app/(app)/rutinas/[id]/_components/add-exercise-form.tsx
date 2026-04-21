@@ -60,7 +60,7 @@ export const AddExerciseForm = ({ routineId, exercises }: Props): React.ReactEle
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por nombre, músculo o equipamiento…"
-            className="h-12 w-full rounded-[14px] border border-white/10 bg-ink-800/60 px-4 text-[14px] text-ink-50 outline-none transition-all placeholder:text-ink-300 hover:border-white/20 focus:border-mineral-400/80 focus:bg-ink-800 focus:ring-4 focus:ring-mineral-400/10"
+            className="h-12 w-full rounded-md border border-white/10 bg-ink-800/60 px-4 text-[14px] text-ink-50 outline-none transition-all placeholder:text-ink-300 hover:border-white/20 focus:border-mineral-400/80 focus:bg-ink-800 focus:ring-4 focus:ring-mineral-400/10"
           />
         </div>
         <div className="mt-3 max-h-64 overflow-y-auto rounded-xl border border-white/5 bg-ink-950/40">
