@@ -31,19 +31,31 @@ describe("AppNav", () => {
     usePathname.mockReturnValue("/dashboard");
     render(<AppNav />);
 
-    for (const label of ["Entrenar", "Progreso"]) {
-      const el = screen.getByText(label);
-      expect(el.tagName).toBe("SPAN");
-      expect(el).toHaveAttribute("aria-disabled");
-    }
+    const el = screen.getByText("Progreso");
+    expect(el.tagName).toBe("SPAN");
+    expect(el).toHaveAttribute("aria-disabled");
   });
 
-  it("renders Rutinas as a link", () => {
+  it("renders Rutinas and Entrenar as links", () => {
     usePathname.mockReturnValue("/dashboard");
     render(<AppNav />);
 
-    const link = screen.getByRole("link", { name: "Rutinas" });
-    expect(link).toHaveAttribute("href", "/rutinas");
+    expect(screen.getByRole("link", { name: "Rutinas" })).toHaveAttribute(
+      "href",
+      "/rutinas",
+    );
+    expect(screen.getByRole("link", { name: "Entrenar" })).toHaveAttribute(
+      "href",
+      "/entrenar",
+    );
+  });
+
+  it("marks Entrenar as current when inside the training section", () => {
+    usePathname.mockReturnValue("/entrenar/historial/abc");
+    render(<AppNav />);
+
+    const link = screen.getByRole("link", { name: "Entrenar" });
+    expect(link).toHaveAttribute("aria-current", "page");
   });
 
   it("marks Rutinas as current when inside the routines section", () => {

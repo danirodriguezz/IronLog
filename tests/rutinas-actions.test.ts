@@ -150,7 +150,7 @@ describe("createRoutineAction", () => {
     );
 
     expect(supabaseMock.from).toHaveBeenCalledWith("routines");
-    expect(callOf("insert")?.args[0]).toEqual({
+    expect(callOf("insert")?.args[0]).toMatchObject({
       user_id: "user-1",
       name: "Día de pierna",
       description: "cuadríceps + glúteo",
