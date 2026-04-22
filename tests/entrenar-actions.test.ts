@@ -111,6 +111,8 @@ import {
   saveDraftAction,
   finishSessionAction,
   discardSessionAction,
+  logPastSessionAction,
+  saveCompletedEditAction,
   type DraftSet,
 } from "@/app/(app)/entrenar/actions";
 
@@ -286,17 +288,31 @@ describe("saveDraftAction", () => {
     expect(revalidatePathMock).not.toHaveBeenCalled();
   });
 
-  it("rejects when the session is no longer active", async () => {
+  it("allows saving draft on a completed session", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult(
+      { data: { id: "s-1", user_id: "u-1", status: "completed" }, error: null },
+      { data: null, error: null }, // delete
+      { data: null, error: null }, // insert
+    );
+
+    const result = await saveDraftAction("s-1", [draftSet()]);
+    expect(result).toEqual({ success: "Borrador guardado." });
+  });
+
+  it("rejects when the session is discarded", async () => {
     supabaseMock.auth.getUser.mockResolvedValue({
       data: { user: { id: "u-1" } },
     });
     setQueryResult({
-      data: { id: "s-1", user_id: "u-1", status: "completed" },
+      data: { id: "s-1", user_id: "u-1", status: "discarded" },
       error: null,
     });
 
     const result = await saveDraftAction("s-1", [draftSet()]);
-    expect(result?.error).toContain("ya no está en curso");
+    expect(result?.error).toContain("descartada");
   });
 
   it("replaces sets (delete + insert) filtering empty drafts", async () => {
@@ -444,15 +460,58 @@ describe("finishSessionAction", () => {
       data: { user: { id: "u-1" } },
     });
     setQueryResult({
-      data: { id: "s-1", user_id: "u-1", status: "completed" },
+      data: { id: "s-1", user_id: "u-1", status: "discarded" },
       error: null,
     });
 
     const result = await finishSessionAction("s-1", [draftSet()]);
-    expect(result?.error).toContain("ya no está en curso");
-    // No update of sessions status
+    expect(result?.error).toContain("descartada");
     expect(buildersFor("sessions")).toHaveLength(1);
     expect(revalidatePathMock).not.toHaveBeenCalled();
+  });
+
+  it("uses provided endedAt instead of current time", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult(
+      { data: { id: "s-1", user_id: "u-1", status: "active" }, error: null },
+      { data: null, error: null },
+      { data: null, error: null },
+      { data: null, error: null },
+    );
+
+    const customEndedAt = "2026-04-20T10:30:00.000Z";
+    await finishSessionAction("s-1", [draftSet()], customEndedAt);
+
+    const updateBuilder = buildersFor("sessions")[1];
+    const updateArgs = callOn(updateBuilder, "update")?.args[0] as {
+      status: string;
+      ended_at: string;
+    };
+    expect(updateArgs.ended_at).toBe(customEndedAt);
+    expect(updateArgs.status).toBe("completed");
+  });
+
+  it("sets ended_at to null when explicitly passed null", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult(
+      { data: { id: "s-1", user_id: "u-1", status: "active" }, error: null },
+      { data: null, error: null },
+      { data: null, error: null },
+      { data: null, error: null },
+    );
+
+    await finishSessionAction("s-1", [draftSet()], null);
+
+    const updateBuilder = buildersFor("sessions")[1];
+    const updateArgs = callOn(updateBuilder, "update")?.args[0] as {
+      status: string;
+      ended_at: string | null;
+    };
+    expect(updateArgs.ended_at).toBeNull();
   });
 
   it("returns an error when the status update fails", async () => {
@@ -511,6 +570,228 @@ describe("discardSessionAction", () => {
         { method: "eq", args: ["status", "active"] },
       ]),
     );
+    expect(revalidatePathMock).toHaveBeenCalledWith("/entrenar");
+  });
+});
+
+describe("logPastSessionAction", () => {
+  it("does nothing when routineId is missing", async () => {
+    await logPastSessionAction(formData({ sessionDate: "2026-04-20" }));
+    expect(supabaseMock.from).not.toHaveBeenCalled();
+  });
+
+  it("does nothing when sessionDate is missing", async () => {
+    await logPastSessionAction(formData({ routineId: "rt-1" }));
+    expect(supabaseMock.from).not.toHaveBeenCalled();
+  });
+
+  it("does nothing when sessionDate has invalid format", async () => {
+    await logPastSessionAction(formData({ routineId: "rt-1", sessionDate: "20-04-2026" }));
+    expect(supabaseMock.from).not.toHaveBeenCalled();
+  });
+
+  it("redirects to /login when user is not authenticated", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({ data: { user: null } });
+    await expectRedirect(
+      logPastSessionAction(formData({ routineId: "rt-1", sessionDate: "2026-04-20" })),
+      "/login",
+    );
+  });
+
+  it("redirects to existing active session without creating a new one", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult({ data: { id: "s-existing" }, error: null });
+
+    await expectRedirect(
+      logPastSessionAction(formData({ routineId: "rt-1", sessionDate: "2026-04-20" })),
+      "/entrenar/s-existing",
+    );
+    expect(buildersFor("routines")).toHaveLength(0);
+  });
+
+  it("creates session with started_at set to noon UTC of the given date", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult(
+      { data: null, error: null },
+      {
+        data: {
+          id: "rt-1",
+          name: "Empuje",
+          routine_exercises: [{ id: "re-1", exercise_id: "ex-a", order_index: 0 }],
+        },
+        error: null,
+      },
+      { data: { id: "s-new" }, error: null },
+      { data: null, error: null },
+    );
+
+    await expectRedirect(
+      logPastSessionAction(formData({ routineId: "rt-1", sessionDate: "2026-04-20" })),
+      "/entrenar/s-new",
+    );
+
+    const insertBuilder = buildersFor("sessions")[1];
+    const insertArgs = callOn(insertBuilder, "insert")?.args[0] as {
+      started_at: string;
+      status: string;
+    };
+    expect(insertArgs.started_at).toBe("2026-04-20T12:00:00.000Z");
+    expect(insertArgs.status).toBe("active");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/entrenar");
+  });
+
+  it("copies routine exercises sorted by order_index", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult(
+      { data: null, error: null },
+      {
+        data: {
+          id: "rt-1",
+          name: "Empuje",
+          routine_exercises: [
+            { id: "re-2", exercise_id: "ex-b", order_index: 1 },
+            { id: "re-1", exercise_id: "ex-a", order_index: 0 },
+          ],
+        },
+        error: null,
+      },
+      { data: { id: "s-new" }, error: null },
+      { data: null, error: null },
+    );
+
+    await expectRedirect(
+      logPastSessionAction(formData({ routineId: "rt-1", sessionDate: "2026-04-20" })),
+      "/entrenar/s-new",
+    );
+
+    const seBuilder = buildersFor("session_exercises")[0];
+    const inserted = callOn(seBuilder, "insert")?.args[0] as Array<{
+      exercise_id: string;
+      order_index: number;
+    }>;
+    expect(inserted).toHaveLength(2);
+    expect(inserted[0]).toMatchObject({ exercise_id: "ex-a", order_index: 0 });
+    expect(inserted[1]).toMatchObject({ exercise_id: "ex-b", order_index: 1 });
+  });
+
+  it("aborts silently when the routine does not exist", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult(
+      { data: null, error: null },
+      { data: null, error: null },
+    );
+
+    await logPastSessionAction(formData({ routineId: "rt-missing", sessionDate: "2026-04-20" }));
+    expect(buildersFor("session_exercises")).toHaveLength(0);
+    expect(revalidatePathMock).not.toHaveBeenCalled();
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("saveCompletedEditAction", () => {
+  it("returns auth error when user is missing", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({ data: { user: null } });
+    const result = await saveCompletedEditAction("s-1", [draftSet()]);
+    expect(result?.error).toContain("expirado");
+    expect(supabaseMock.from).not.toHaveBeenCalled();
+  });
+
+  it("rejects when session belongs to another user", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult({
+      data: { id: "s-1", user_id: "other-user", status: "completed" },
+      error: null,
+    });
+
+    const result = await saveCompletedEditAction("s-1", [draftSet()]);
+    expect(result?.error).toBe("Sesión no encontrada.");
+  });
+
+  it("rejects when session is discarded", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult({
+      data: { id: "s-1", user_id: "u-1", status: "discarded" },
+      error: null,
+    });
+
+    const result = await saveCompletedEditAction("s-1", [draftSet()]);
+    expect(result?.error).toContain("descartada");
+  });
+
+  it("saves sets on a completed session and returns success", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult(
+      { data: { id: "s-1", user_id: "u-1", status: "completed" }, error: null },
+      { data: null, error: null }, // delete
+      { data: null, error: null }, // insert
+    );
+
+    const result = await saveCompletedEditAction("s-1", [draftSet()]);
+    expect(result).toEqual({ success: "Cambios guardados." });
+    expect(buildersFor("sets")).toHaveLength(2);
+  });
+
+  it("updates ended_at when endedAt is provided", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult(
+      { data: { id: "s-1", user_id: "u-1", status: "completed" }, error: null },
+      { data: null, error: null },
+      { data: null, error: null },
+      { data: null, error: null }, // update ended_at
+    );
+
+    const customEndedAt = "2026-04-20T13:00:00.000Z";
+    await saveCompletedEditAction("s-1", [draftSet()], customEndedAt);
+
+    const updateBuilder = buildersFor("sessions")[1];
+    const updateArgs = callOn(updateBuilder, "update")?.args[0] as { ended_at: string };
+    expect(updateArgs.ended_at).toBe(customEndedAt);
+  });
+
+  it("skips the ended_at update when endedAt is undefined", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult(
+      { data: { id: "s-1", user_id: "u-1", status: "completed" }, error: null },
+      { data: null, error: null },
+      { data: null, error: null },
+    );
+
+    await saveCompletedEditAction("s-1", [draftSet()], undefined);
+
+    // Only one sessions builder (the ownership lookup), no update
+    expect(buildersFor("sessions")).toHaveLength(1);
+  });
+
+  it("revalidates both the session detail path and /entrenar", async () => {
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { id: "u-1" } },
+    });
+    setQueryResult(
+      { data: { id: "s-1", user_id: "u-1", status: "completed" }, error: null },
+      { data: null, error: null },
+      { data: null, error: null },
+    );
+
+    await saveCompletedEditAction("s-1", [draftSet()]);
+    expect(revalidatePathMock).toHaveBeenCalledWith("/entrenar/historial/s-1");
     expect(revalidatePathMock).toHaveBeenCalledWith("/entrenar");
   });
 });

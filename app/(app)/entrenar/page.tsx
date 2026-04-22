@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getDayLongLabel } from "@/lib/week";
 import { startSessionAction } from "./actions";
+import { LogPastSessionForm } from "./_components/log-past-session-form";
 
 type TodayRoutine = {
   id: string;
@@ -204,9 +205,18 @@ const EntrenarPage = async (): Promise<React.ReactElement> => {
           <h3 className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-300">
             Historial
           </h3>
-          <p className="font-mono tabular-nums text-[10px] uppercase tracking-[0.2em] text-ink-400">
-            {String(history.length).padStart(2, "0")} entreno{history.length === 1 ? "" : "s"}
-          </p>
+          <div className="flex items-baseline gap-5">
+            <LogPastSessionForm
+              routines={[
+                ...(todayRoutine ? [{ id: todayRoutine.id, name: todayRoutine.name }] : []),
+                ...other.map((r) => ({ id: r.id, name: r.name })),
+              ]}
+              hasActiveSession={Boolean(activeSession)}
+            />
+            <p className="font-mono tabular-nums text-[10px] uppercase tracking-[0.2em] text-ink-400">
+              {String(history.length).padStart(2, "0")} entreno{history.length === 1 ? "" : "s"}
+            </p>
+          </div>
         </div>
         {history.length === 0 ? (
           <p className="mt-5 hairline rounded-2xl bg-ink-900/40 p-6 text-ink-300">
@@ -216,21 +226,32 @@ const EntrenarPage = async (): Promise<React.ReactElement> => {
           <ol className="mt-5 space-y-2.5">
             {history.map((s) => (
               <li key={s.id}>
-                <Link
-                  href={`/entrenar/historial/${s.id}`}
-                  className="hairline group flex items-center justify-between gap-4 rounded-2xl bg-ink-900/40 p-4 transition-colors hover:bg-ink-900/80"
-                >
-                  <div className="min-w-0">
+                <div className="hairline flex items-center gap-3 rounded-2xl bg-ink-900/40 p-4 transition-colors hover:bg-ink-900/60">
+                  <Link
+                    href={`/entrenar/historial/${s.id}`}
+                    className="min-w-0 flex-1"
+                  >
                     <p className="truncate font-display text-base leading-tight">{s.name}</p>
                     <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-400 tabular-nums">
                       {formatDate(s.started_at)} · {formatDuration(s.started_at, s.ended_at)} ·{" "}
                       {s.session_exercises?.[0]?.count ?? 0} ej.
                     </p>
+                  </Link>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <Link
+                      href={`/entrenar/historial/${s.id}/editar`}
+                      className="inline-flex h-9 items-center justify-center rounded-full border border-ink-700 px-3.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-300 transition-colors hover:border-ink-500 hover:text-ink-100"
+                    >
+                      Editar
+                    </Link>
+                    <Link
+                      href={`/entrenar/historial/${s.id}`}
+                      className="inline-flex h-9 items-center justify-center rounded-full border border-ink-700 px-3.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-300 transition-colors hover:border-ink-500 hover:text-ink-100"
+                    >
+                      Ver →
+                    </Link>
                   </div>
-                  <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-300 transition-colors group-hover:text-mineral-200">
-                    Ver →
-                  </span>
-                </Link>
+                </div>
               </li>
             ))}
           </ol>

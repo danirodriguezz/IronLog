@@ -127,6 +127,12 @@ const HistorySessionPage = async ({
           ← Entrenar
         </Link>
         <nav className="flex items-center gap-2">
+          <Link
+            href={`/entrenar/historial/${sessionId}/editar`}
+            className="hairline inline-flex h-10 min-w-11 items-center justify-center rounded-full bg-ink-900/50 px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
+          >
+            Editar
+          </Link>
           {prevRes.data ? (
             <Link
               href={`/entrenar/historial/${prevRes.data.id}`}

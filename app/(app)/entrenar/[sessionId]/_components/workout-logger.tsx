@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   discardSessionAction,
   finishSessionAction,
+  saveCompletedEditAction,
   saveDraftAction,
   type DraftSet,
 } from "../../actions";
@@ -63,6 +64,8 @@ type Props = {
   sessionId: string;
   exercises: LoggerExercise[];
   startedAt: string;
+  endedAt?: string | null;
+  isEditing?: boolean;
 };
 
 const uid = (): string =>
@@ -158,7 +161,7 @@ const formatSecondsElapsed = (ms: number): string => {
   return `${m}:${String(s).padStart(2, "0")}`;
 };
 
-export const WorkoutLogger = ({ sessionId, exercises, startedAt }: Props): React.ReactElement => {
+export const WorkoutLogger = ({ sessionId, exercises, startedAt, endedAt, isEditing = false }: Props): React.ReactElement => {
   const router = useRouter();
   const [state, setState] = useState<ExerciseState[]>(() => initialiseState(exercises));
   const [flash, setFlash] = useState<string | null>(null);
@@ -168,16 +171,24 @@ export const WorkoutLogger = ({ sessionId, exercises, startedAt }: Props): React
   const [dirty, setDirty] = useState(false);
   const [finishing, startFinishTransition] = useTransition();
   const sessionStart = useRef(new Date(startedAt).getTime());
+  const initialDuration = endedAt
+    ? Math.round((new Date(endedAt).getTime() - new Date(startedAt).getTime()) / 60000)
+    : null;
+  const [pastDurationMinutes, setPastDurationMinutes] = useState<number | null>(initialDuration);
+  const todayDate = new Date().toDateString();
+  const sessionDate = new Date(startedAt).toDateString();
+  const isPastSession = sessionDate !== todayDate;
   const [elapsed, setElapsed] = useState(() => Date.now() - sessionStart.current);
   const saveTimer = useRef<number | null>(null);
   const dirtyRef = useRef(false);
 
   useEffect(() => {
+    if (isPastSession) return;
     const id = window.setInterval(() => {
       setElapsed(Date.now() - sessionStart.current);
     }, 1000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [isPastSession]);
 
   const scheduleSave = (): void => {
     dirtyRef.current = true;
@@ -271,7 +282,15 @@ export const WorkoutLogger = ({ sessionId, exercises, startedAt }: Props): React
     startFinishTransition(async () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
       dirtyRef.current = false;
-      const res = await finishSessionAction(sessionId, toDraftSets(state));
+      let computedEndedAt: string | null | undefined = undefined;
+      if (isPastSession) {
+        computedEndedAt = pastDurationMinutes
+          ? new Date(sessionStart.current + pastDurationMinutes * 60 * 1000).toISOString()
+          : null;
+      }
+      const res = isEditing
+        ? await saveCompletedEditAction(sessionId, toDraftSets(state), computedEndedAt)
+        : await finishSessionAction(sessionId, toDraftSets(state), computedEndedAt);
       if (res?.error) {
         setError(res.error);
         return;
@@ -301,8 +320,16 @@ export const WorkoutLogger = ({ sessionId, exercises, startedAt }: Props): React
       <div className="hairline sticky top-4 z-20 flex flex-col gap-0 rounded-2xl bg-ink-950/85 backdrop-blur">
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
-            <span className="flex h-2 w-2 rounded-full bg-mineral-400 shadow-[0_0_10px_var(--color-mineral-400)]" />
-            <p className="font-mono tabular-nums text-sm text-ink-100">{formatSecondsElapsed(elapsed)}</p>
+            {isPastSession ? (
+              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">
+                Sesión pasada
+              </span>
+            ) : (
+              <>
+                <span className="flex h-2 w-2 rounded-full bg-mineral-400 shadow-[0_0_10px_var(--color-mineral-400)]" />
+                <p className="font-mono tabular-nums text-sm text-ink-100">{formatSecondsElapsed(elapsed)}</p>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">
@@ -350,20 +377,57 @@ export const WorkoutLogger = ({ sessionId, exercises, startedAt }: Props): React
       </ol>
 
       <div className="sticky bottom-4 z-20 flex flex-col gap-2 rounded-2xl bg-ink-950/85 p-3 backdrop-blur hairline sm:flex-row sm:items-center sm:justify-between">
-        <button
-          type="button"
-          onClick={() => setConfirmDiscard(true)}
-          className="inline-flex min-h-12 items-center justify-center rounded-full px-5 font-mono text-[11px] uppercase tracking-[0.22em] text-ember-400 transition-colors hover:bg-ember-500/10 focus:outline-none focus:ring-2 focus:ring-ember-500"
-        >
-          Descartar entreno
-        </button>
+        {isPastSession ? (
+          <div className="flex items-center gap-3 px-2 pb-2 mb-1 border-b border-ink-800/60 sm:border-b-0 sm:border-r sm:pr-4 sm:mr-1 sm:mb-0 sm:pb-0">
+            <label
+              htmlFor="past-duration"
+              className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-400 whitespace-nowrap"
+            >
+              Duración
+            </label>
+            <div className="flex items-center gap-1.5">
+              <input
+                id="past-duration"
+                type="number"
+                min={1}
+                max={600}
+                placeholder="—"
+                value={pastDurationMinutes ?? ""}
+                onChange={(e) =>
+                  setPastDurationMinutes(e.target.value ? Math.max(1, Math.min(600, Number(e.target.value))) : null)
+                }
+                className="w-16 rounded-sm border border-ink-700 bg-ink-800/60 px-2 py-1.5 text-center font-mono text-sm text-ink-100 focus:border-mineral-400 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-400">
+                min
+              </span>
+            </div>
+          </div>
+        ) : null}
+        {isEditing ? (
+          <button
+            type="button"
+            onClick={() => router.push(`/entrenar/historial/${sessionId}`)}
+            className="inline-flex min-h-12 items-center justify-center rounded-full px-5 font-mono text-[11px] uppercase tracking-[0.22em] text-ink-300 transition-colors hover:bg-ink-800/50 focus:outline-none focus:ring-2 focus:ring-ink-500"
+          >
+            Cancelar edición
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmDiscard(true)}
+            className="inline-flex min-h-12 items-center justify-center rounded-full px-5 font-mono text-[11px] uppercase tracking-[0.22em] text-ember-400 transition-colors hover:bg-ember-500/10 focus:outline-none focus:ring-2 focus:ring-ember-500"
+          >
+            Descartar entreno
+          </button>
+        )}
         <button
           type="button"
           onClick={onFinish}
           disabled={finishing}
           className="inline-flex min-h-13 items-center justify-center rounded-full bg-mineral-300 px-7 font-mono text-[12px] uppercase tracking-[0.22em] text-ink-950 transition-all hover:bg-mineral-200 focus:outline-none focus:ring-2 focus:ring-mineral-400 focus:ring-offset-2 focus:ring-offset-ink-950 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {finishing ? "Guardando…" : "Guardar entreno"}
+          {finishing ? "Guardando…" : isEditing ? "Guardar cambios" : "Guardar entreno"}
         </button>
       </div>
 
