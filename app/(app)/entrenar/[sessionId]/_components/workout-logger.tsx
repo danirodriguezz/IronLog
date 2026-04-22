@@ -300,19 +300,29 @@ export const WorkoutLogger = ({ sessionId, exercises }: Props): React.ReactEleme
 
   return (
     <div className="space-y-6">
-      <div className="hairline sticky top-4 z-20 flex items-center justify-between gap-3 rounded-2xl bg-ink-950/85 px-4 py-3 backdrop-blur">
-        <div className="flex items-center gap-3">
-          <span className="flex h-2 w-2 rounded-full bg-mineral-400 shadow-[0_0_10px_var(--color-mineral-400)]" />
-          <p className="font-mono tabular-nums text-sm text-ink-100">{formatSecondsElapsed(elapsed)}</p>
+      <div className="hairline sticky top-4 z-20 flex flex-col gap-0 rounded-2xl bg-ink-950/85 backdrop-blur">
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <span className="flex h-2 w-2 rounded-full bg-mineral-400 shadow-[0_0_10px_var(--color-mineral-400)]" />
+            <p className="font-mono tabular-nums text-sm text-ink-100">{formatSecondsElapsed(elapsed)}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">
+              {savingDraft ? "Guardando…" : dirty ? "Sin guardar" : "Borrador ok"}
+            </p>
+            <span className="hidden sm:inline font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">
+              · {totalDone} series
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">
-            {savingDraft ? "Guardando…" : dirty ? "Sin guardar" : "Borrador ok"}
-          </p>
-          <span className="hidden sm:inline font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">
-            · {totalDone} series
-          </span>
-        </div>
+        {error ? (
+          <div
+            role="alert"
+            className="border-t border-ember-500/30 px-4 py-2.5 text-center font-mono text-[11px] uppercase tracking-[0.18em] text-ember-400"
+          >
+            {error}
+          </div>
+        ) : null}
       </div>
 
       {exercises.length === 0 ? (
@@ -340,15 +350,6 @@ export const WorkoutLogger = ({ sessionId, exercises }: Props): React.ReactEleme
           );
         })}
       </ol>
-
-      {error ? (
-        <div
-          role="alert"
-          className="hairline rounded-xl bg-ember-500/10 px-4 py-3 text-sm text-ember-400"
-        >
-          {error}
-        </div>
-      ) : null}
 
       <div className="sticky bottom-4 z-20 flex flex-col gap-2 rounded-2xl bg-ink-950/85 p-3 backdrop-blur hairline sm:flex-row sm:items-center sm:justify-between">
         <button
