@@ -153,7 +153,7 @@ const ActiveSessionPage = async ({
       </header>
 
       <div className="mt-8">
-        <WorkoutLogger sessionId={sessionId} exercises={exercises} />
+        <WorkoutLogger sessionId={sessionId} exercises={exercises} startedAt={session.started_at} />
       </div>
     </div>
   );

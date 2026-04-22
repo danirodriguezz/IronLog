@@ -62,6 +62,7 @@ type ExerciseState = {
 type Props = {
   sessionId: string;
   exercises: LoggerExercise[];
+  startedAt: string;
 };
 
 const uid = (): string =>
@@ -157,7 +158,7 @@ const formatSecondsElapsed = (ms: number): string => {
   return `${m}:${String(s).padStart(2, "0")}`;
 };
 
-export const WorkoutLogger = ({ sessionId, exercises }: Props): React.ReactElement => {
+export const WorkoutLogger = ({ sessionId, exercises, startedAt }: Props): React.ReactElement => {
   const router = useRouter();
   const [state, setState] = useState<ExerciseState[]>(() => initialiseState(exercises));
   const [flash, setFlash] = useState<string | null>(null);
@@ -166,17 +167,14 @@ export const WorkoutLogger = ({ sessionId, exercises }: Props): React.ReactEleme
   const [savingDraft, setSavingDraft] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [finishing, startFinishTransition] = useTransition();
-  const [elapsed, setElapsed] = useState(0);
-  const startedAtRef = useRef<number | null>(null);
+  const sessionStart = useRef(new Date(startedAt).getTime());
+  const [elapsed, setElapsed] = useState(() => Date.now() - sessionStart.current);
   const saveTimer = useRef<number | null>(null);
   const dirtyRef = useRef(false);
 
   useEffect(() => {
-    startedAtRef.current = Date.now();
     const id = window.setInterval(() => {
-      if (startedAtRef.current !== null) {
-        setElapsed(Date.now() - startedAtRef.current);
-      }
+      setElapsed(Date.now() - sessionStart.current);
     }, 1000);
     return () => window.clearInterval(id);
   }, []);
