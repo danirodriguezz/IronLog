@@ -443,7 +443,7 @@ describe("finishSessionAction", () => {
       data: { user: { id: "u-1" } },
     });
     setQueryResult({
-      data: { id: "s-1", user_id: "u-1", status: "discarded" },
+      data: { id: "s-1", user_id: "u-1", status: "completed" },
       error: null,
     });
 
@@ -487,7 +487,7 @@ describe("discardSessionAction", () => {
     expect(supabaseMock.from).not.toHaveBeenCalled();
   });
 
-  it("updates status to discarded guarded by user_id and active status, then redirects", async () => {
+  it("deletes the session guarded by user_id and active status, then redirects", async () => {
     supabaseMock.auth.getUser.mockResolvedValue({
       data: { user: { id: "u-1" } },
     });
@@ -499,12 +499,8 @@ describe("discardSessionAction", () => {
     );
 
     const b = buildersFor("sessions")[0];
-    const updateArgs = callOn(b, "update")?.args[0] as {
-      status: string;
-      ended_at: string;
-    };
-    expect(updateArgs.status).toBe("discarded");
-    expect(typeof updateArgs.ended_at).toBe("string");
+    expect(callOn(b, "delete")).toBeDefined();
+    expect(callOn(b, "update")).toBeUndefined();
 
     const eqCalls = b.__calls.filter((c) => c.method === "eq");
     expect(eqCalls).toEqual(

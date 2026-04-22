@@ -191,7 +191,7 @@ export const discardSessionAction = async (formData: FormData): Promise<void> =>
 
   await supabase
     .from("sessions")
-    .update({ status: "discarded", ended_at: new Date().toISOString() })
+    .delete()
     .eq("id", sessionId)
     .eq("user_id", user.id)
     .eq("status", "active");
