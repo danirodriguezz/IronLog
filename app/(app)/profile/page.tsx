@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "./_components/profile-form";
+import { ActivityFeed } from "./_components/activity-feed";
+import { ProfileTabs } from "./_components/profile-tabs";
 
 type Profile = {
   username: string;
@@ -121,24 +123,27 @@ const ProfilePage = async (): Promise<React.ReactElement> => {
         ))}
       </section>
 
-      {/* ── Edit form ── */}
-      <section className="mt-12">
-        <div className="mb-6">
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-mineral-300">
-            Tu perfil
-          </p>
-          <h2 className="mt-2 font-display text-3xl leading-tight">
-            Editar información
-          </h2>
-          <p className="mt-1.5 text-sm text-ink-200">
-            Actualiza tus datos personales. El nombre de usuario debe ser único.
-          </p>
-        </div>
-
-        <div className="hairline rounded-2xl bg-ink-900/40 p-6 md:p-8">
-          <ProfileForm profile={profile} />
-        </div>
-      </section>
+      <ProfileTabs
+        activityPanel={<ActivityFeed userId={user.id} />}
+        profilePanel={
+          <div className="mt-10">
+            <div className="mb-6">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-mineral-300">
+                Tu perfil
+              </p>
+              <h2 className="mt-2 font-display text-3xl leading-tight">
+                Editar información
+              </h2>
+              <p className="mt-1.5 text-sm text-ink-200">
+                Actualiza tus datos personales. El nombre de usuario debe ser único.
+              </p>
+            </div>
+            <div className="hairline rounded-2xl bg-ink-900/40 p-6 md:p-8">
+              <ProfileForm profile={profile} />
+            </div>
+          </div>
+        }
+      />
     </div>
   );
 };
