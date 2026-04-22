@@ -13,6 +13,7 @@ export type DraftSet = {
   weightKg: number | null;
   durationSeconds: number | null;
   distanceMeters: number | null;
+  paceSeconds: number | null;
   rpe: number | null;
 };
 
@@ -117,7 +118,8 @@ const replaceSets = async (
       (s) =>
         s.reps !== null ||
         s.durationSeconds !== null ||
-        s.distanceMeters !== null,
+        s.distanceMeters !== null ||
+        s.paceSeconds !== null,
     )
     .map((s) => ({
       session_exercise_id: s.sessionExerciseId,
@@ -127,6 +129,7 @@ const replaceSets = async (
       weight_kg: s.weightKg,
       duration_seconds: s.durationSeconds,
       distance_meters: s.distanceMeters,
+      pace_seconds: s.paceSeconds,
       rpe: s.rpe,
     }));
 

@@ -23,6 +23,7 @@ type SetRow = {
   weight_kg: number | null;
   duration_seconds: number | null;
   distance_meters: number | null;
+  pace_seconds: number | null;
   rpe: number | null;
 };
 
@@ -65,7 +66,7 @@ const ActiveSessionPage = async ({
       .returns<SessionExerciseRow[]>(),
     supabase
       .from("sets")
-      .select("id, session_exercise_id, set_number, reps, weight_kg, duration_seconds, distance_meters, rpe")
+      .select("id, session_exercise_id, set_number, reps, weight_kg, duration_seconds, distance_meters, pace_seconds, rpe")
       .in(
         "session_exercise_id",
         (
@@ -122,6 +123,7 @@ const ActiveSessionPage = async ({
         weightKg: s.weight_kg,
         durationSeconds: s.duration_seconds,
         distanceMeters: s.distance_meters,
+        paceSeconds: s.pace_seconds ?? null,
         rpe: s.rpe,
       })),
     };
@@ -186,7 +188,7 @@ const fetchLastPerformance = async (
 
     const { data: sets } = await supabase
       .from("sets")
-      .select("set_number, reps, weight_kg, duration_seconds, distance_meters, is_pr")
+      .select("set_number, reps, weight_kg, duration_seconds, distance_meters, pace_seconds, is_pr")
       .eq("session_exercise_id", last.id)
       .order("set_number", { ascending: true });
 
@@ -202,6 +204,7 @@ const fetchLastPerformance = async (
         weightKg: s.weight_kg,
         durationSeconds: s.duration_seconds,
         distanceMeters: s.distance_meters,
+        paceSeconds: s.pace_seconds ?? null,
         isPr: s.is_pr,
       })),
     });

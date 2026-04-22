@@ -137,6 +137,7 @@ const draftSet = (overrides: Partial<DraftSet> = {}): DraftSet => ({
   weightKg: 80,
   durationSeconds: null,
   distanceMeters: null,
+  paceSeconds: null,
   rpe: null,
   ...overrides,
 });

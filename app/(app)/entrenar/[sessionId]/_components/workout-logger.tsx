@@ -17,6 +17,7 @@ export type LastPerformanceSet = {
   weightKg: number | null;
   durationSeconds: number | null;
   distanceMeters: number | null;
+  paceSeconds: number | null;
   isPr: boolean;
 };
 
@@ -33,6 +34,7 @@ type DraftRow = {
   weightKg: number | null;
   durationSeconds: number | null;
   distanceMeters: number | null;
+  paceSeconds: number | null;
   rpe: number | null;
 };
 
@@ -74,6 +76,7 @@ const blankSet = (setNumber: number): SetState => ({
   weightKg: null,
   durationSeconds: null,
   distanceMeters: null,
+  paceSeconds: null,
   rpe: null,
   done: false,
 });
@@ -87,7 +90,7 @@ const initialiseState = (exercises: LoggerExercise[]): ExerciseState[] =>
         sets: ex.draftSets.map((s) => ({ ...s, id: uid(), done: true })),
       };
     }
-    const count = ex.targetSets ?? 3;
+    const count = ex.type === "cardio" ? 1 : (ex.targetSets ?? 3);
     return {
       sessionExerciseId: ex.sessionExerciseId,
       sets: Array.from({ length: Math.max(1, count) }, (_, i) => blankSet(i + 1)),
@@ -101,7 +104,8 @@ const toDraftSets = (state: ExerciseState[]): DraftSet[] =>
         (s) =>
           s.reps !== null ||
           s.durationSeconds !== null ||
-          s.distanceMeters !== null,
+          s.distanceMeters !== null ||
+          s.paceSeconds !== null,
       )
       .map((s, idx) => ({
         sessionExerciseId: ex.sessionExerciseId,
@@ -110,6 +114,7 @@ const toDraftSets = (state: ExerciseState[]): DraftSet[] =>
         weightKg: s.weightKg,
         durationSeconds: s.durationSeconds,
         distanceMeters: s.distanceMeters,
+        paceSeconds: s.paceSeconds,
         rpe: s.rpe,
       })),
   );
@@ -121,9 +126,27 @@ const hasAnyData = (state: ExerciseState[]): boolean =>
         s.reps !== null ||
         s.weightKg !== null ||
         s.durationSeconds !== null ||
-        s.distanceMeters !== null,
+        s.distanceMeters !== null ||
+        s.paceSeconds !== null,
     ),
   );
+
+const validateCardio = (exercises: LoggerExercise[], state: ExerciseState[]): string | null => {
+  for (const ex of exercises) {
+    if (ex.type !== "cardio") continue;
+    const exState = state.find((s) => s.sessionExerciseId === ex.sessionExerciseId);
+    if (!exState) continue;
+    const incomplete = exState.sets.some(
+      (s) =>
+        (s.distanceMeters !== null || s.paceSeconds !== null) &&
+        (s.distanceMeters === null || s.paceSeconds === null),
+    );
+    if (incomplete) {
+      return `"${ex.name}" requiere km y ritmo en cada serie.`;
+    }
+  }
+  return null;
+};
 
 const formatSecondsElapsed = (ms: number): string => {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -239,6 +262,11 @@ export const WorkoutLogger = ({ sessionId, exercises }: Props): React.ReactEleme
   const onFinish = (): void => {
     if (!hasAnyData(state)) {
       setError("Registra al menos una serie antes de guardar.");
+      return;
+    }
+    const cardioError = validateCardio(exercises, state);
+    if (cardioError) {
+      setError(cardioError);
       return;
     }
     setError(null);
@@ -374,8 +402,9 @@ const ExerciseCard = ({
   const [compareOpen, setCompareOpen] = useState(false);
   const usesWeight = exercise.type === "strength";
   const usesReps = exercise.type === "strength" || exercise.type === "bodyweight";
-  const usesDuration = exercise.type === "isometric" || exercise.type === "cardio";
+  const usesDuration = exercise.type === "isometric";
   const usesDistance = exercise.type === "cardio";
+  const usesPace = exercise.type === "cardio";
 
   return (
     <article className="hairline rounded-2xl bg-ink-900/50 p-4 sm:p-5">
@@ -443,8 +472,8 @@ const ExerciseCard = ({
       <div className="mt-4 overflow-hidden rounded-xl hairline">
         <div className="grid grid-cols-[28px_1fr_1fr_44px_36px] items-center gap-2 bg-ink-950/60 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-400">
           <span>#</span>
-          <span>{usesWeight ? "Kg" : usesDistance ? "Metros" : "—"}</span>
-          <span>{usesReps ? "Reps" : usesDuration ? "Segundos" : "—"}</span>
+          <span>{usesWeight ? "Kg" : usesDistance ? "Km" : "—"}</span>
+          <span>{usesReps ? "Reps" : usesPace ? "Ritmo" : usesDuration ? "Segundos" : "—"}</span>
           <span className="text-center">Ok</span>
           <span />
         </div>
@@ -452,7 +481,11 @@ const ExerciseCard = ({
         <ul>
           {state.sets.map((s, i) => {
             const lastRef = exercise.last?.sets[i];
-            const metricA = usesWeight ? s.weightKg : s.distanceMeters;
+            const metricA = usesWeight
+              ? s.weightKg
+              : s.distanceMeters !== null
+                ? s.distanceMeters / 1000
+                : null;
             const metricB = usesReps ? s.reps : s.durationSeconds;
             const placeholderA = usesWeight
               ? lastRef?.weightKg != null
@@ -462,7 +495,7 @@ const ExerciseCard = ({
                   : "—"
               : usesDistance
                 ? lastRef?.distanceMeters != null
-                  ? String(lastRef.distanceMeters)
+                  ? String(lastRef.distanceMeters / 1000)
                   : "—"
                 : "";
             const placeholderB = usesReps
@@ -478,6 +511,8 @@ const ExerciseCard = ({
                     ? String(exercise.targetDurationSeconds)
                     : "—"
                 : "";
+            const placeholderPace =
+              lastRef?.paceSeconds != null ? formatPace(lastRef.paceSeconds) : "5:00";
 
             return (
               <li
@@ -490,24 +525,40 @@ const ExerciseCard = ({
                   {s.setNumber}
                 </span>
                 <MetricInput
-                  ariaLabel={usesWeight ? "Kilos" : "Metros"}
+                  ariaLabel={usesWeight ? "Kilos" : "Km"}
                   value={metricA}
                   placeholder={placeholderA}
                   disabled={!usesWeight && !usesDistance}
-                  decimal={usesWeight}
+                  decimal={usesWeight || usesDistance}
                   onChange={(n) =>
-                    onUpdateSet(state.sessionExerciseId, s.id, usesWeight ? { weightKg: n } : { distanceMeters: n })
+                    onUpdateSet(
+                      state.sessionExerciseId,
+                      s.id,
+                      usesWeight
+                        ? { weightKg: n }
+                        : { distanceMeters: n !== null ? n * 1000 : null },
+                    )
                   }
                 />
-                <MetricInput
-                  ariaLabel={usesReps ? "Repeticiones" : "Segundos"}
-                  value={metricB}
-                  placeholder={placeholderB}
-                  disabled={!usesReps && !usesDuration}
-                  onChange={(n) =>
-                    onUpdateSet(state.sessionExerciseId, s.id, usesReps ? { reps: n } : { durationSeconds: n })
-                  }
-                />
+                {usesPace ? (
+                  <PaceInput
+                    value={s.paceSeconds}
+                    placeholder={placeholderPace}
+                    onChange={(n) =>
+                      onUpdateSet(state.sessionExerciseId, s.id, { paceSeconds: n })
+                    }
+                  />
+                ) : (
+                  <MetricInput
+                    ariaLabel={usesReps ? "Repeticiones" : "Segundos"}
+                    value={metricB}
+                    placeholder={placeholderB}
+                    disabled={!usesReps && !usesDuration}
+                    onChange={(n) =>
+                      onUpdateSet(state.sessionExerciseId, s.id, usesReps ? { reps: n } : { durationSeconds: n })
+                    }
+                  />
+                )}
                 <div className="flex items-center justify-center">
                   <button
                     type="button"
@@ -565,6 +616,71 @@ const ExerciseCard = ({
   );
 };
 
+const formatPace = (totalSeconds: number): string => {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+};
+
+const parsePace = (str: string): number | null => {
+  const trimmed = str.trim();
+  if (!trimmed) return null;
+  const parts = trimmed.split(":");
+  if (parts.length === 2) {
+    const mins = parseInt(parts[0], 10);
+    const secs = parseInt(parts[1], 10);
+    if (
+      Number.isFinite(mins) &&
+      Number.isFinite(secs) &&
+      mins >= 0 &&
+      secs >= 0 &&
+      secs < 60
+    ) {
+      return mins * 60 + secs;
+    }
+  }
+  const n = Number(trimmed);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n) : null;
+};
+
+type PaceInputProps = {
+  value: number | null;
+  placeholder: string;
+  onChange: (value: number | null) => void;
+};
+
+const PaceInput = ({ value, placeholder, onChange }: PaceInputProps): React.ReactElement => {
+  const [display, setDisplay] = useState(() => (value !== null ? formatPace(value) : ""));
+  const focusedRef = useRef(false);
+
+  useEffect(() => {
+    if (!focusedRef.current) {
+      setDisplay(value !== null ? formatPace(value) : "");
+    }
+  }, [value]);
+
+  return (
+    <input
+      type="text"
+      inputMode="text"
+      aria-label="Ritmo (min/km)"
+      value={display}
+      placeholder={placeholder}
+      onChange={(e) => setDisplay(e.target.value)}
+      onFocus={() => {
+        focusedRef.current = true;
+      }}
+      onBlur={() => {
+        focusedRef.current = false;
+        const parsed = parsePace(display);
+        onChange(parsed);
+        setDisplay(parsed !== null ? formatPace(parsed) : "");
+      }}
+      className="h-10 w-full rounded-lg bg-ink-950/60 px-2.5 text-center font-mono text-[15px] tabular-nums text-ink-50 placeholder:text-ink-500/70 focus:outline-none focus:ring-2 focus:ring-mineral-400"
+    />
+  );
+};
+
 type MetricInputProps = {
   value: number | null;
   placeholder: string;
@@ -581,27 +697,55 @@ const MetricInput = ({
   disabled,
   decimal,
   onChange,
-}: MetricInputProps): React.ReactElement => (
-  <input
-    type="text"
-    inputMode={decimal ? "decimal" : "numeric"}
-    pattern={decimal ? "[0-9]*[.,]?[0-9]*" : "[0-9]*"}
-    aria-label={ariaLabel}
-    disabled={disabled}
-    value={value === null ? "" : String(value)}
-    placeholder={placeholder}
-    onChange={(e) => {
-      const raw = e.target.value.replace(",", ".").trim();
-      if (raw === "") {
-        onChange(null);
-        return;
-      }
-      const n = Number(raw);
-      if (Number.isFinite(n) && n >= 0) onChange(n);
-    }}
-    className="h-10 w-full rounded-lg bg-ink-950/60 px-2.5 text-center font-mono text-[15px] tabular-nums text-ink-50 placeholder:text-ink-500/70 focus:outline-none focus:ring-2 focus:ring-mineral-400 disabled:bg-transparent disabled:text-ink-600"
-  />
-);
+}: MetricInputProps): React.ReactElement => {
+  const [display, setDisplay] = useState(() => (value === null ? "" : String(value)));
+  const focusedRef = useRef(false);
+
+  useEffect(() => {
+    if (!focusedRef.current) {
+      setDisplay(value === null ? "" : String(value));
+    }
+  }, [value]);
+
+  return (
+    <input
+      type="text"
+      inputMode={decimal ? "decimal" : "numeric"}
+      pattern={decimal ? "[0-9]*[.,]?[0-9]*" : "[0-9]*"}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      value={display}
+      placeholder={placeholder}
+      onChange={(e) => {
+        const raw = e.target.value;
+        const pattern = decimal ? /^[0-9]*[,.]?[0-9]*$/ : /^[0-9]*$/;
+        if (!pattern.test(raw)) return;
+        setDisplay(raw);
+        const normalized = raw.replace(",", ".");
+        if (normalized === "" || normalized === ".") {
+          onChange(null);
+          return;
+        }
+        const n = Number(normalized);
+        if (Number.isFinite(n) && n >= 0) onChange(n);
+      }}
+      onFocus={() => {
+        focusedRef.current = true;
+      }}
+      onBlur={() => {
+        focusedRef.current = false;
+        const normalized = display.replace(",", ".");
+        const n = Number(normalized);
+        if (normalized === "" || !Number.isFinite(n)) {
+          setDisplay(value === null ? "" : String(value));
+        } else {
+          setDisplay(String(n));
+        }
+      }}
+      className="h-10 w-full rounded-lg bg-ink-950/60 px-2.5 text-center font-mono text-[15px] tabular-nums text-ink-50 placeholder:text-ink-500/70 focus:outline-none focus:ring-2 focus:ring-mineral-400 disabled:bg-transparent disabled:text-ink-600"
+    />
+  );
+};
 
 type ConfirmProps = {
   sessionId: string;
