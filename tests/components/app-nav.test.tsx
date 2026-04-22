@@ -7,63 +7,66 @@ vi.mock("next/navigation", () => ({
   usePathname: () => usePathname(),
 }));
 
-import { AppNav } from "@/app/(app)/_components/app-nav";
+vi.mock("@/components/brand/logo", () => ({
+  Logo: () => <svg data-testid="logo" />,
+}));
 
-describe("AppNav", () => {
+vi.mock("@/components/ui/logout-button", () => ({
+  LogoutButton: () => <button type="button">Cerrar sesión</button>,
+}));
+
+import { AppHeader } from "@/app/(app)/_components/app-nav";
+
+describe("AppHeader nav links", () => {
   it("marks the dashboard link as current when on /dashboard", () => {
     usePathname.mockReturnValue("/dashboard");
-    render(<AppNav />);
+    render(<AppHeader />);
 
-    const link = screen.getByRole("link", { name: "Panel" });
-    expect(link).toHaveAttribute("href", "/dashboard");
-    expect(link).toHaveAttribute("aria-current", "page");
+    const links = screen.getAllByRole("link", { name: "Panel" });
+    expect(links[0]).toHaveAttribute("href", "/dashboard");
+    expect(links[0]).toHaveAttribute("aria-current", "page");
   });
 
   it("does not mark the dashboard link as current on other routes", () => {
     usePathname.mockReturnValue("/rutinas");
-    render(<AppNav />);
+    render(<AppHeader />);
 
-    const link = screen.getByRole("link", { name: "Panel" });
-    expect(link).not.toHaveAttribute("aria-current");
+    const links = screen.getAllByRole("link", { name: "Panel" });
+    expect(links[0]).not.toHaveAttribute("aria-current");
   });
 
-  it("renders Progreso as an active link", () => {
+  it("renders Progreso as a link", () => {
     usePathname.mockReturnValue("/dashboard");
-    render(<AppNav />);
+    render(<AppHeader />);
 
-    expect(screen.getByRole("link", { name: "Progreso" })).toHaveAttribute(
-      "href",
-      "/progreso",
-    );
+    const links = screen.getAllByRole("link", { name: "Progreso" });
+    expect(links[0]).toHaveAttribute("href", "/progreso");
   });
 
   it("renders Rutinas and Entrenar as links", () => {
     usePathname.mockReturnValue("/dashboard");
-    render(<AppNav />);
+    render(<AppHeader />);
 
-    expect(screen.getByRole("link", { name: "Rutinas" })).toHaveAttribute(
-      "href",
-      "/rutinas",
-    );
-    expect(screen.getByRole("link", { name: "Entrenar" })).toHaveAttribute(
-      "href",
-      "/entrenar",
-    );
+    const rutinas = screen.getAllByRole("link", { name: "Rutinas" });
+    expect(rutinas[0]).toHaveAttribute("href", "/rutinas");
+
+    const entrenar = screen.getAllByRole("link", { name: "Entrenar" });
+    expect(entrenar[0]).toHaveAttribute("href", "/entrenar");
   });
 
   it("marks Entrenar as current when inside the training section", () => {
     usePathname.mockReturnValue("/entrenar/historial/abc");
-    render(<AppNav />);
+    render(<AppHeader />);
 
-    const link = screen.getByRole("link", { name: "Entrenar" });
-    expect(link).toHaveAttribute("aria-current", "page");
+    const links = screen.getAllByRole("link", { name: "Entrenar" });
+    expect(links[0]).toHaveAttribute("aria-current", "page");
   });
 
   it("marks Rutinas as current when inside the routines section", () => {
     usePathname.mockReturnValue("/rutinas/abc-123");
-    render(<AppNav />);
+    render(<AppHeader />);
 
-    const link = screen.getByRole("link", { name: "Rutinas" });
-    expect(link).toHaveAttribute("aria-current", "page");
+    const links = screen.getAllByRole("link", { name: "Rutinas" });
+    expect(links[0]).toHaveAttribute("aria-current", "page");
   });
 });

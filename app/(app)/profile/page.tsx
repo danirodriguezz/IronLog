@@ -66,6 +66,7 @@ const ProfilePage = async (): Promise<React.ReactElement> => {
               src={profile.avatar_url}
               alt={profile.full_name ?? profile.username}
               className="h-20 w-20 rounded-full object-cover ring-2 ring-white/10"
+              referrerPolicy="no-referrer"
             />
           ) : (
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-ink-600 ring-2 ring-white/10">
