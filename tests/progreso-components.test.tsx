@@ -234,8 +234,6 @@ describe("PerformanceChart", () => {
         exerciseType="strength"
       />,
     );
-    const bars = container.querySelectorAll(`rect[key^='bar']`);
-    // rects for volume bars have a fill gradient — check we have rects beyond y-axis
     expect(container.querySelectorAll("rect").length).toBeGreaterThan(0);
   });
 });

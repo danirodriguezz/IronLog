@@ -98,8 +98,8 @@ const Stat = ({ label, value }: { label: string; value: number }): React.ReactEl
 
 const Avatar = ({ url, username }: { url: string | null; username: string }): React.ReactElement => {
   if (url) {
-    // eslint-disable-next-line @next/next/no-img-element
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={url}
         alt={`Avatar de ${username}`}

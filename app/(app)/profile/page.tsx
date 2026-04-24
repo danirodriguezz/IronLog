@@ -64,6 +64,7 @@ const ProfilePage = async (): Promise<React.ReactElement> => {
         {/* Avatar */}
         <div className="relative shrink-0">
           {profile.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={profile.avatar_url}
               alt={profile.full_name ?? profile.username}

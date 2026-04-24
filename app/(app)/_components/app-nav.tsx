@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { Logo } from "@/components/brand/logo";
 import { LogoutButton } from "@/components/ui/logout-button";
 import { UserSearch } from "./user-search";
@@ -29,7 +29,7 @@ export const AppHeader = ({
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setOpen(false);
+    startTransition(() => setOpen(false));
   }, [pathname]);
 
   useEffect(() => {

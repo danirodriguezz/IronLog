@@ -170,15 +170,16 @@ export const WorkoutLogger = ({ sessionId, exercises, startedAt, endedAt, isEdit
   const [savingDraft, setSavingDraft] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [finishing, startFinishTransition] = useTransition();
-  const sessionStart = useRef(new Date(startedAt).getTime());
+  const sessionStartMs = new Date(startedAt).getTime();
+  const sessionStart = useRef(sessionStartMs);
   const initialDuration = endedAt
-    ? Math.round((new Date(endedAt).getTime() - new Date(startedAt).getTime()) / 60000)
+    ? Math.round((new Date(endedAt).getTime() - sessionStartMs) / 60000)
     : null;
   const [pastDurationMinutes, setPastDurationMinutes] = useState<number | null>(initialDuration);
   const todayDate = new Date().toDateString();
   const sessionDate = new Date(startedAt).toDateString();
   const isPastSession = sessionDate !== todayDate;
-  const [elapsed, setElapsed] = useState(() => Date.now() - sessionStart.current);
+  const [elapsed, setElapsed] = useState(() => Date.now() - sessionStartMs);
   const saveTimer = useRef<number | null>(null);
   const dirtyRef = useRef(false);
 

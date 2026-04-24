@@ -1,15 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const { supabaseMock } = vi.hoisted(() => {
-  const makeChain = () => {
-    const chain: Record<string, unknown> = {};
-    const methods = ["select", "insert", "update", "delete", "eq", "single", "rpc"];
-    for (const m of methods) {
-      chain[m] = vi.fn(() => chain);
-    }
-    return chain;
-  };
-
   const supabaseMock = {
     auth: { getUser: vi.fn() },
     from: vi.fn(),

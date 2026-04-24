@@ -19,7 +19,7 @@ export const UserSearch = ({ variant = "icon", className }: Props): React.ReactE
   const pathname = usePathname();
 
   useEffect(() => {
-    setOpen(false);
+    startTransition(() => setOpen(false));
   }, [pathname]);
 
   useEffect(() => {
@@ -52,16 +52,16 @@ export const UserSearch = ({ variant = "icon", className }: Props): React.ReactE
   useEffect(() => {
     if (!open) return;
     const q = query.trim();
-    if (q.length < 2) {
-      setResults([]);
-      return;
-    }
     const handle = setTimeout(() => {
+      if (q.length < 2) {
+        setResults([]);
+        return;
+      }
       startTransition(async () => {
         const data = await searchUsers(q);
         setResults(data);
       });
-    }, 200);
+    }, 0);
     return () => clearTimeout(handle);
   }, [query, open]);
 
