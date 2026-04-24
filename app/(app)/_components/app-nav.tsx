@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Logo } from "@/components/brand/logo";
 import { LogoutButton } from "@/components/ui/logout-button";
+import { UserSearch } from "./user-search";
 
 type NavItem = {
   href: string;
@@ -19,7 +20,11 @@ const ITEMS: readonly NavItem[] = [
   { href: "/progreso", label: "Progreso" },
 ] as const;
 
-export const AppHeader = (): React.ReactElement => {
+export const AppHeader = ({
+  pendingRequests = 0,
+}: {
+  pendingRequests?: number;
+}): React.ReactElement => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -79,8 +84,29 @@ export const AppHeader = (): React.ReactElement => {
             })}
           </nav>
 
-          {/* Right side: profile + logout (desktop) + hamburger (mobile) */}
+          {/* Right side: search + requests + profile + logout (desktop) + hamburger (mobile) */}
           <div className="flex items-center gap-3">
+            <UserSearch />
+            <Link
+              href="/profile/solicitudes"
+              title="Solicitudes de seguimiento"
+              aria-label={
+                pendingRequests > 0
+                  ? `Solicitudes de seguimiento (${pendingRequests} pendientes)`
+                  : "Solicitudes de seguimiento"
+              }
+              className="relative flex items-center justify-center w-8 h-8 rounded-full text-ink-200 hover:text-ink-50 hover:bg-ink-800/40 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+              </svg>
+              {pendingRequests > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-ember-500 text-ink-950 font-mono text-[9px] leading-4 text-center font-semibold tabular-nums ring-2 ring-ink-950">
+                  {pendingRequests > 9 ? "9+" : pendingRequests}
+                </span>
+              )}
+            </Link>
             <Link
               href="/profile"
               title="Mi perfil"
@@ -171,6 +197,21 @@ export const AppHeader = (): React.ReactElement => {
               <line x1="13" y1="1" x2="1" y2="13" />
             </svg>
           </button>
+        </div>
+
+        <div className="px-6 py-4 border-b border-white/6 flex flex-col gap-3">
+          <UserSearch variant="full" />
+          <Link
+            href="/profile/solicitudes"
+            className="flex items-center justify-between gap-3 px-4 py-3 rounded-md text-[13px] text-ink-300 bg-ink-900/60 hairline hover:text-ink-50 transition-colors"
+          >
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em]">Solicitudes</span>
+            {pendingRequests > 0 && (
+              <span className="min-w-5 h-5 px-1.5 rounded-full bg-ember-500 text-ink-950 font-mono text-[10px] leading-5 text-center font-semibold tabular-nums">
+                {pendingRequests > 9 ? "9+" : pendingRequests}
+              </span>
+            )}
+          </Link>
         </div>
 
         <div className="flex flex-col flex-1 py-2">

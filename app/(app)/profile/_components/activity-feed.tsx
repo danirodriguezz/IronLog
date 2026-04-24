@@ -61,7 +61,13 @@ const typeLabel: Record<ExerciseRow["type"], string> = {
   bodyweight: "Peso corporal",
 };
 
-export const ActivityFeed = async ({ userId }: { userId: string }): Promise<React.ReactElement> => {
+export const ActivityFeed = async ({
+  userId,
+  disableLinks = false,
+}: {
+  userId: string;
+  disableLinks?: boolean;
+}): Promise<React.ReactElement> => {
   const supabase = await createClient();
 
   const { data } = await supabase
@@ -91,17 +97,21 @@ export const ActivityFeed = async ({ userId }: { userId: string }): Promise<Reac
     return (
       <div className="mt-8 hairline rounded-2xl bg-ink-900/30 px-6 py-12 text-center">
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-400">
-          Aún no hay entrenos completados
+          {disableLinks ? "Sin entrenos todavía" : "Aún no hay entrenos completados"}
         </p>
-        <p className="mt-2 text-sm text-ink-300">
-          Completa tu primer entreno para verlo aquí.
-        </p>
-        <Link
-          href="/entrenar"
-          className="mt-5 inline-flex items-center gap-2 rounded-full bg-mineral-700/20 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-mineral-300 ring-1 ring-mineral-700/40 transition-colors hover:bg-mineral-700/30"
-        >
-          Ir a entrenar
-        </Link>
+        {!disableLinks && (
+          <>
+            <p className="mt-2 text-sm text-ink-300">
+              Completa tu primer entreno para verlo aquí.
+            </p>
+            <Link
+              href="/entrenar"
+              className="mt-5 inline-flex items-center gap-2 rounded-full bg-mineral-700/20 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-mineral-300 ring-1 ring-mineral-700/40 transition-colors hover:bg-mineral-700/30"
+            >
+              Ir a entrenar
+            </Link>
+          </>
+        )}
       </div>
     );
   }
@@ -112,12 +122,14 @@ export const ActivityFeed = async ({ userId }: { userId: string }): Promise<Reac
         <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">
           {sessions.length === 20 ? "Últimos 20 entrenos" : `${sessions.length} entreno${sessions.length !== 1 ? "s" : ""}`}
         </span>
-        <Link
-          href="/entrenar"
-          className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-400 transition-colors hover:text-ink-200"
-        >
-          Ver historial
-        </Link>
+        {!disableLinks && (
+          <Link
+            href="/entrenar"
+            className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-400 transition-colors hover:text-ink-200"
+          >
+            Ver historial
+          </Link>
+        )}
       </div>
 
       <ol className="mt-6 space-y-3">
@@ -134,12 +146,23 @@ export const ActivityFeed = async ({ userId }: { userId: string }): Promise<Reac
 
           const types = [...new Set(exercises.map((se) => se.exercises?.type).filter(Boolean))] as ExerciseRow["type"][];
 
+          const cardClasses = disableLinks
+            ? "group block hairline rounded-2xl bg-ink-900/40 p-5"
+            : "group block hairline rounded-2xl bg-ink-900/40 p-5 transition-colors hover:bg-ink-900/70";
+
+          const CardWrapper = disableLinks
+            ? ({ children }: { children: React.ReactNode }) => (
+                <div className={cardClasses}>{children}</div>
+              )
+            : ({ children }: { children: React.ReactNode }) => (
+                <Link href={`/entrenar/historial/${session.id}`} className={cardClasses}>
+                  {children}
+                </Link>
+              );
+
           return (
             <li key={session.id}>
-              <Link
-                href={`/entrenar/historial/${session.id}`}
-                className="group block hairline rounded-2xl bg-ink-900/40 p-5 transition-colors hover:bg-ink-900/70"
-              >
+              <CardWrapper>
                 {/* Header */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
@@ -160,19 +183,21 @@ export const ActivityFeed = async ({ userId }: { userId: string }): Promise<Reac
                     </h3>
                   </div>
 
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="mt-1 shrink-0 text-ink-500 transition-colors group-hover:text-ink-300"
-                  >
-                    <path d="M9 18l6-6-6-6" />
-                  </svg>
+                  {!disableLinks && (
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="mt-1 shrink-0 text-ink-500 transition-colors group-hover:text-ink-300"
+                    >
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  )}
                 </div>
 
                 {/* Stats row */}
@@ -208,13 +233,13 @@ export const ActivityFeed = async ({ userId }: { userId: string }): Promise<Reac
                     )}
                   </div>
                 )}
-              </Link>
+              </CardWrapper>
             </li>
           );
         })}
       </ol>
 
-      {sessions.length === 20 && (
+      {!disableLinks && sessions.length === 20 && (
         <div className="mt-4 text-center">
           <Link
             href="/entrenar"
