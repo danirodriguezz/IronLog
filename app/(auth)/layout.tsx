@@ -22,13 +22,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10 max-w-xl space-y-10">
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-200">
-            <span className="inline-block size-1.5 rounded-full bg-mineral-400 mr-2 align-middle animate-[pulseGlow_3s_ease-in-out_infinite]" />
+            <span className="inline-block size-1.5 rounded-full bg-mineral-400 mr-2 align-middle animate-pulse-glow" />
             Mesociclo activo · Semana 3 / 6
           </p>
           <h1 className="font-display text-5xl xl:text-6xl leading-[0.95] tracking-tight">
             Cada repetición,
             <br />
-            <em className="not-italic bg-gradient-to-r from-mineral-200 via-mineral-300 to-mineral-500 bg-clip-text text-transparent">
+            <em className="not-italic bg-linear-to-r from-mineral-200 via-mineral-300 to-mineral-500 bg-clip-text text-transparent">
               una decisión
             </em>{" "}
             medida.
@@ -39,7 +39,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
           {/* Floating stats card */}
           <div className="relative isolate mt-4">
-            <div className="relative rounded-2xl hairline bg-ink-900/70 backdrop-blur-xl p-5 shadow-[var(--shadow-card)]">
+            <div className="relative rounded-2xl hairline bg-ink-900/70 backdrop-blur-xl p-5 shadow-[--shadow-card]">
               <div className="flex items-center justify-between mb-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-200">
                   PR · últimos 30 días
@@ -97,7 +97,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <div className="flex-1 flex items-center justify-center px-6 py-10 lg:py-16">
-          <div className="w-full max-w-[400px]">{children}</div>
+          <div className="w-full max-w-100">{children}</div>
         </div>
       </main>
     </div>

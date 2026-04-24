@@ -48,14 +48,17 @@ export const FollowButton = ({
     });
   };
 
+  const baseBtn =
+    "inline-flex w-full justify-center items-center rounded-full font-mono text-[11px] uppercase tracking-[0.2em] px-4 py-2 sm:w-auto sm:py-1.5 transition-colors disabled:opacity-60";
+
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="flex flex-col gap-1">
       {status === "none" && (
         <button
           type="button"
           onClick={handleFollow}
           disabled={isPending}
-          className="inline-flex items-center rounded-full bg-ink-50 text-ink-950 px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] ring-1 ring-white/10 transition-opacity hover:opacity-90 disabled:opacity-60"
+          className={`${baseBtn} bg-ink-50 text-ink-950 ring-1 ring-white/10 hover:opacity-90`}
         >
           {isPending ? "…" : isPublicProfile ? "Seguir" : "Solicitar seguir"}
         </button>
@@ -68,7 +71,7 @@ export const FollowButton = ({
           onMouseEnter={() => setHovering(true)}
           onMouseLeave={() => setHovering(false)}
           disabled={isPending}
-          className="inline-flex items-center rounded-full bg-ink-800/80 text-ink-200 px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] ring-1 ring-white/10 transition-colors hover:bg-ember-500/15 hover:text-ember-400 hover:ring-ember-500/30 disabled:opacity-60"
+          className={`${baseBtn} bg-ink-800/80 text-ink-200 ring-1 ring-white/10 hover:bg-ember-500/15 hover:text-ember-400 hover:ring-ember-500/30`}
         >
           {isPending ? "…" : hovering ? "Cancelar solicitud" : "Solicitud enviada"}
         </button>
@@ -81,14 +84,14 @@ export const FollowButton = ({
           onMouseEnter={() => setHovering(true)}
           onMouseLeave={() => setHovering(false)}
           disabled={isPending}
-          className="inline-flex items-center rounded-full bg-mineral-700/25 text-mineral-300 px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.2em] ring-1 ring-mineral-700/40 transition-colors hover:bg-ember-500/15 hover:text-ember-400 hover:ring-ember-500/30 disabled:opacity-60"
+          className={`${baseBtn} bg-mineral-700/25 text-mineral-300 ring-1 ring-mineral-700/40 hover:bg-ember-500/15 hover:text-ember-400 hover:ring-ember-500/30`}
         >
           {isPending ? "…" : hovering ? "Dejar de seguir" : "Siguiendo"}
         </button>
       )}
 
       {error && (
-        <span role="alert" className="font-mono text-[10px] uppercase tracking-[0.22em] text-ember-400">
+        <span role="alert" className="font-mono text-[10px] uppercase tracking-[0.22em] text-ember-400 text-center sm:text-right">
           {error}
         </span>
       )}

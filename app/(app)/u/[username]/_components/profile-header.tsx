@@ -26,9 +26,45 @@ export const ProfileHeader = ({
   trailing,
 }: Props): React.ReactElement => {
   return (
-    <header className="hairline rounded-2xl bg-ink-900/40 p-6 sm:p-8">
-      <div className="flex items-start gap-5 sm:gap-6">
-        <Avatar url={avatarUrl} username={username} />
+    <header className="hairline rounded-2xl bg-ink-900/40 p-5 sm:p-8">
+      {/* Mobile: avatar + stats en la misma fila, nombre y botón debajo */}
+      <div className="flex items-center gap-4 sm:hidden">
+        <Avatar url={avatarUrl} username={username} size="sm" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">
+              @{username}
+            </span>
+            {!isPublic && (
+              <span
+                className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-400 border border-white/10 rounded-full px-1.5 py-0.5"
+                title="Perfil privado"
+              >
+                Privado
+              </span>
+            )}
+          </div>
+          <div className="mt-2 flex items-center gap-4">
+            <Stat label="Seguidores" value={followersCount} />
+            <span className="text-ink-700">·</span>
+            <Stat label="Siguiendo" value={followingCount} />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: nombre + botón debajo del bloque avatar */}
+      <div className="mt-4 sm:hidden">
+        {fullName && (
+          <h1 className="font-display text-2xl leading-tight tracking-tight text-ink-50">
+            {fullName}
+          </h1>
+        )}
+        {trailing && <div className="mt-3">{trailing}</div>}
+      </div>
+
+      {/* Desktop: layout original horizontal */}
+      <div className="hidden sm:flex items-start gap-6">
+        <Avatar url={avatarUrl} username={username} size="lg" />
 
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -47,7 +83,7 @@ export const ProfileHeader = ({
                 )}
               </div>
               {fullName && (
-                <h1 className="mt-1.5 font-display text-3xl sm:text-4xl leading-tight tracking-tight text-ink-50">
+                <h1 className="mt-1.5 font-display text-4xl leading-tight tracking-tight text-ink-50">
                   {fullName}
                 </h1>
               )}
@@ -60,31 +96,31 @@ export const ProfileHeader = ({
             <span className="text-ink-700">·</span>
             <Stat label="Siguiendo" value={followingCount} />
           </div>
-
-          {showBio && (goal || age || weightKg) && (
-            <dl className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-ink-300">
-              {goal && (
-                <div>
-                  <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">Objetivo</dt>
-                  <dd className="mt-0.5">{goal}</dd>
-                </div>
-              )}
-              {age !== null && (
-                <div>
-                  <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">Edad</dt>
-                  <dd className="mt-0.5 tabular-nums">{age}</dd>
-                </div>
-              )}
-              {weightKg !== null && (
-                <div>
-                  <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">Peso</dt>
-                  <dd className="mt-0.5 tabular-nums">{weightKg} kg</dd>
-                </div>
-              )}
-            </dl>
-          )}
         </div>
       </div>
+
+      {showBio && (goal || age || weightKg) && (
+        <dl className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-[12px] text-ink-300">
+          {goal && (
+            <div>
+              <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">Objetivo</dt>
+              <dd className="mt-0.5">{goal}</dd>
+            </div>
+          )}
+          {age !== null && (
+            <div>
+              <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">Edad</dt>
+              <dd className="mt-0.5 tabular-nums">{age}</dd>
+            </div>
+          )}
+          {weightKg !== null && (
+            <div>
+              <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">Peso</dt>
+              <dd className="mt-0.5 tabular-nums">{weightKg} kg</dd>
+            </div>
+          )}
+        </dl>
+      )}
     </header>
   );
 };
@@ -96,20 +132,35 @@ const Stat = ({ label, value }: { label: string; value: number }): React.ReactEl
   </div>
 );
 
-const Avatar = ({ url, username }: { url: string | null; username: string }): React.ReactElement => {
+const Avatar = ({
+  url,
+  username,
+  size,
+}: {
+  url: string | null;
+  username: string;
+  size: "sm" | "lg";
+}): React.ReactElement => {
+  const cls =
+    size === "sm"
+      ? "w-16 h-16 rounded-full shrink-0"
+      : "w-24 h-24 rounded-full shrink-0";
+
   if (url) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={url}
         alt={`Avatar de ${username}`}
-        className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover ring-1 ring-white/10 shrink-0"
+        className={`${cls} object-cover ring-1 ring-white/10`}
         referrerPolicy="no-referrer"
       />
     );
   }
   return (
-    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-ink-800 ring-1 ring-white/10 flex items-center justify-center font-display text-2xl text-ink-300 uppercase shrink-0">
+    <div
+      className={`${cls} bg-ink-800 ring-1 ring-white/10 flex items-center justify-center font-display text-ink-300 uppercase ${size === "sm" ? "text-xl" : "text-2xl"}`}
+    >
       {username.slice(0, 2)}
     </div>
   );
