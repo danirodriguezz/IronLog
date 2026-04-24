@@ -31,7 +31,7 @@ export const ProfileTabs = ({ activityPanel, profilePanel }: Props): React.React
                 aria-controls={`panel-${t.id}`}
                 onClick={() => setTab(t.id)}
                 className={`relative pb-3 pr-6 font-mono text-[11px] uppercase tracking-[0.2em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mineral-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 ${
-                  active ? "text-ink-50" : "text-ink-400 hover:text-ink-200"
+                  active ? "text-ink-50" : "text-ink-300 hover:text-ink-200"
                 }`}
               >
                 {t.label}

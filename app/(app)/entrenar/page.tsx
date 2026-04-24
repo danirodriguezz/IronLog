@@ -228,7 +228,7 @@ const EntrenarPage = async (): Promise<React.ReactElement> => {
               <li key={s.id}>
                 <div className="hairline flex items-center gap-3 rounded-2xl bg-ink-900/40 p-4 transition-colors hover:bg-ink-900/60">
                   <Link
-                    href={`/entrenar/historial/${s.id}`}
+                    href={`/entrenar/historial/${s.id}?back=/entrenar`}
                     className="min-w-0 flex-1"
                   >
                     <p className="truncate font-display text-base leading-tight">{s.name}</p>
@@ -245,7 +245,7 @@ const EntrenarPage = async (): Promise<React.ReactElement> => {
                       Editar
                     </Link>
                     <Link
-                      href={`/entrenar/historial/${s.id}`}
+                      href={`/entrenar/historial/${s.id}?back=/entrenar`}
                       className="inline-flex h-9 items-center justify-center rounded-full border border-ink-700 px-3.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-300 transition-colors hover:border-ink-500 hover:text-ink-100"
                     >
                       Ver →

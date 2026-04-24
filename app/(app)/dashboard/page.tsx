@@ -32,6 +32,13 @@ const startOfIsoWeek = (ref: Date = new Date()): Date => {
 const formatKg = (n: number): string =>
   new Intl.NumberFormat("es-ES", { maximumFractionDigits: 0 }).format(n);
 
+const formatMetersToKm = (meters: number): string => {
+  const km = meters / 1000;
+  return new Intl.NumberFormat("es-ES", { 
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0 
+  }).format(km);
+};
 const formatPr = (s: PrSet): { headline: string; hint: string } | null => {
   const ex = s.exercises;
   if (!ex) return null;
@@ -57,7 +64,7 @@ const formatPr = (s: PrSet): { headline: string; hint: string } | null => {
     case "cardio":
       if (s.distance_meters == null) return null;
       return {
-        headline: `${formatKg(s.distance_meters)} m`,
+        headline: `${formatMetersToKm(s.distance_meters)} km`,
         hint: `${ex.name} · ${when}`,
       };
   }

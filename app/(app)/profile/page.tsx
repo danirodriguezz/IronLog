@@ -124,7 +124,7 @@ const ProfilePage = async (): Promise<React.ReactElement> => {
       </section>
 
       <ProfileTabs
-        activityPanel={<ActivityFeed userId={user.id} />}
+        activityPanel={<ActivityFeed userId={user.id} backHref="/profile" />}
         profilePanel={
           <div className="mt-10">
             <div className="mb-6">

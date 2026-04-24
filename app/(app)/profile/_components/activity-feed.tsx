@@ -64,9 +64,11 @@ const typeLabel: Record<ExerciseRow["type"], string> = {
 export const ActivityFeed = async ({
   userId,
   disableLinks = false,
+  backHref,
 }: {
   userId: string;
   disableLinks?: boolean;
+  backHref?: string;
 }): Promise<React.ReactElement> => {
   const supabase = await createClient();
 
@@ -119,13 +121,13 @@ export const ActivityFeed = async ({
   return (
     <section className="mt-8">
       <div className="flex items-center justify-between mb-1">
-        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">
+        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-300">
           {sessions.length === 20 ? "Últimos 20 entrenos" : `${sessions.length} entreno${sessions.length !== 1 ? "s" : ""}`}
         </span>
         {!disableLinks && (
           <Link
             href="/entrenar"
-            className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-400 transition-colors hover:text-ink-200"
+            className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-300 transition-colors hover:text-ink-200"
           >
             Ver historial
           </Link>
@@ -155,7 +157,10 @@ export const ActivityFeed = async ({
                 <div className={cardClasses}>{children}</div>
               )
             : ({ children }: { children: React.ReactNode }) => (
-                <Link href={`/entrenar/historial/${session.id}`} className={cardClasses}>
+                <Link
+                  href={`/entrenar/historial/${session.id}${backHref ? `?back=${encodeURIComponent(backHref)}` : ""}`}
+                  className={cardClasses}
+                >
                   {children}
                 </Link>
               );
@@ -167,7 +172,7 @@ export const ActivityFeed = async ({
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400 tabular-nums">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-200 tabular-nums">
                         {formatRelativeDate(session.started_at)}
                         <span className="mx-1.5 text-ink-600">·</span>
                         {formatTime(session.started_at)}
@@ -208,7 +213,7 @@ export const ActivityFeed = async ({
                   {types.map((t) => (
                     <span
                       key={t}
-                      className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-500"
+                      className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-300"
                     >
                       {typeLabel[t]}
                     </span>

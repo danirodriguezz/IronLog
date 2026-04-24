@@ -41,6 +41,12 @@ const formatDate = (iso: string): string =>
     year: "numeric",
   }).format(new Date(iso));
 
+const formatMetersToKm = (meters: number): string => {
+  if (meters < 1000) return `${meters}m`;
+  const km = meters / 1000;
+  return `${km.toFixed(2)}km`;
+}
+
 const formatDuration = (startIso: string, endIso: string | null): string => {
   if (!endIso) return "—";
   const mins = Math.max(1, Math.round((new Date(endIso).getTime() - new Date(startIso).getTime()) / 60000));
@@ -50,12 +56,28 @@ const formatDuration = (startIso: string, endIso: string | null): string => {
   return `${h}h ${String(m).padStart(2, "0")}m`;
 };
 
+const ALLOWED_BACK_PATHS = ["/entrenar", "/profile"] as const;
+
+const resolveBack = (raw: string | undefined): { href: string; label: string } => {
+  if (raw) {
+    const decoded = decodeURIComponent(raw);
+    if ((ALLOWED_BACK_PATHS as readonly string[]).includes(decoded)) {
+      const labels: Record<string, string> = { "/entrenar": "Historial", "/profile": "Perfil" };
+      return { href: decoded, label: labels[decoded] };
+    }
+  }
+  return { href: "/entrenar", label: "Historial" };
+};
+
 const HistorySessionPage = async ({
   params,
+  searchParams,
 }: {
   params: Promise<{ sessionId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<React.ReactElement> => {
-  const { sessionId } = await params;
+  const [{ sessionId }, sp] = await Promise.all([params, searchParams]);
+  const back = resolveBack(typeof sp.back === "string" ? sp.back : undefined);
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -118,18 +140,18 @@ const HistorySessionPage = async ({
   const prCount = totalPrsRes.count ?? 0;
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-8 sm:px-6 md:py-12">
-      <div className="flex items-center justify-between gap-3">
+    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 md:py-12">
+      <div className="flex items-center justify-between gap-2">
         <Link
-          href="/entrenar"
+          href={back.href}
           className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-300 transition-colors hover:text-ink-50"
         >
-          ← Entrenar
+          ← {back.label}
         </Link>
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-1.5 sm:gap-2">
           <Link
             href={`/entrenar/historial/${sessionId}/editar`}
-            className="hairline inline-flex h-10 min-w-11 items-center justify-center rounded-full bg-ink-900/50 px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
+            className="hairline inline-flex h-9 sm:h-10 items-center justify-center rounded-full bg-ink-900/50 px-3 sm:px-4 font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
           >
             Editar
           </Link>
@@ -137,42 +159,46 @@ const HistorySessionPage = async ({
             <Link
               href={`/entrenar/historial/${prevRes.data.id}`}
               aria-label="Entreno anterior"
-              className="hairline inline-flex h-10 min-w-11 items-center justify-center rounded-full bg-ink-900/50 px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
+              className="hairline inline-flex h-9 w-9 sm:h-10 sm:w-auto sm:px-4 items-center justify-center rounded-full bg-ink-900/50 font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
             >
-              ← Anterior
+              <span className="sm:hidden">←</span>
+              <span className="hidden sm:inline">← Anterior</span>
             </Link>
           ) : (
             <span
               aria-disabled
-              className="inline-flex h-10 min-w-11 items-center justify-center rounded-full px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-600"
+              className="inline-flex h-9 w-9 sm:h-10 sm:w-auto sm:px-4 items-center justify-center rounded-full font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-ink-600"
             >
-              ← Anterior
+              <span className="sm:hidden">←</span>
+              <span className="hidden sm:inline">← Anterior</span>
             </span>
           )}
           {nextRes.data ? (
             <Link
               href={`/entrenar/historial/${nextRes.data.id}`}
               aria-label="Entreno siguiente"
-              className="hairline inline-flex h-10 min-w-11 items-center justify-center rounded-full bg-ink-900/50 px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
+              className="hairline inline-flex h-9 w-9 sm:h-10 sm:w-auto sm:px-4 items-center justify-center rounded-full bg-ink-900/50 font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-ink-200 transition-colors hover:bg-ink-900"
             >
-              Siguiente →
+              <span className="sm:hidden">→</span>
+              <span className="hidden sm:inline">Siguiente →</span>
             </Link>
           ) : (
             <span
               aria-disabled
-              className="inline-flex h-10 min-w-11 items-center justify-center rounded-full px-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-600"
+              className="inline-flex h-9 w-9 sm:h-10 sm:w-auto sm:px-4 items-center justify-center rounded-full font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-ink-600"
             >
-              Siguiente →
+              <span className="sm:hidden">→</span>
+              <span className="hidden sm:inline">Siguiente →</span>
             </span>
           )}
         </nav>
       </div>
 
-      <header className="mt-6 space-y-3">
+      <header className="mt-5 sm:mt-6 space-y-2 sm:space-y-3">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-mineral-300">
           Entreno completado
         </p>
-        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-[1.02] tracking-tight">
+        <h1 className="font-display text-2xl sm:text-4xl md:text-5xl leading-[1.02] tracking-tight">
           {session.name}
         </h1>
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-400 tabular-nums">
@@ -180,13 +206,13 @@ const HistorySessionPage = async ({
         </p>
       </header>
 
-      <div className="mt-6 grid grid-cols-3 gap-2.5">
+      <div className="mt-5 sm:mt-6 grid grid-cols-3 gap-2 sm:gap-2.5">
         <Stat label="Duración" value={formatDuration(session.started_at, session.ended_at)} />
         <Stat label="Series" value={String(totalSets)} />
         <Stat label="PRs" value={String(prCount)} accent={prCount > 0} />
       </div>
 
-      <ol className="mt-8 space-y-4">
+      <ol className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
         {items.map((item, idx) => {
           const ex = item.exercises;
           const usesWeight = ex?.type === "strength";
@@ -195,7 +221,7 @@ const HistorySessionPage = async ({
           const usesDuration = ex?.type === "isometric" || ex?.type === "cardio";
 
           return (
-            <li key={item.id} className="hairline rounded-2xl bg-ink-900/50 p-5">
+            <li key={item.id} className="hairline rounded-2xl bg-ink-900/50 p-4 sm:p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0">
                   <span className="font-mono text-[11px] tabular-nums text-ink-400 pt-1">
@@ -233,7 +259,7 @@ const HistorySessionPage = async ({
                       <span className="text-ink-400">#{s.set_number}</span>
                       <span className="text-ink-50">
                         {usesWeight && s.weight_kg !== null ? `${s.weight_kg}kg` : ""}
-                        {usesDistance && s.distance_meters !== null ? `${s.distance_meters}m` : ""}
+                        {usesDistance && s.distance_meters !== null ? `${formatMetersToKm(s.distance_meters)}` : ""}
                         {(usesWeight || usesDistance) && (s.reps !== null || s.duration_seconds !== null) ? " · " : ""}
                         {usesReps && s.reps !== null ? `${s.reps}r` : ""}
                         {usesDuration && s.duration_seconds !== null ? `${s.duration_seconds}s` : ""}
@@ -263,13 +289,13 @@ const Stat = ({
   accent?: boolean;
 }): React.ReactElement => (
   <div
-    className={`hairline rounded-2xl px-4 py-3 ${
+    className={`hairline rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 ${
       accent ? "bg-mineral-700/15" : "bg-ink-900/40"
     }`}
   >
-    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">{label}</p>
+    <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-ink-400">{label}</p>
     <p
-      className={`mt-1 font-display text-xl tabular-nums leading-none ${
+      className={`mt-1 font-display text-lg sm:text-xl tabular-nums leading-none ${
         accent ? "text-mineral-200" : "text-ink-50"
       }`}
     >
