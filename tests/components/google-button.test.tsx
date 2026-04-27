@@ -2,15 +2,29 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-const signInWithGoogleAction = vi.fn();
-vi.mock("@/app/(auth)/actions", () => ({
-  signInWithGoogleAction: (...args: unknown[]) => signInWithGoogleAction(...args),
+const signInWithOAuthMock = vi.fn();
+
+vi.mock("@/lib/supabase/client", () => ({
+  createClient: () => ({
+    auth: {
+      signInWithOAuth: signInWithOAuthMock,
+    },
+  }),
 }));
 
 import { GoogleButton } from "@/components/ui/google-button";
 
 beforeEach(() => {
-  signInWithGoogleAction.mockReset();
+  signInWithOAuthMock.mockReset();
+  // jsdom no implementa navegación, así que la espiamos
+  vi.spyOn(window, "location", "get").mockReturnValue({
+    ...window.location,
+    origin: "http://localhost:3000",
+  } as Location);
+  Object.defineProperty(window, "location", {
+    writable: true,
+    value: { ...window.location, href: "", origin: "http://localhost:3000" },
+  });
 });
 
 describe("GoogleButton", () => {
@@ -28,33 +42,76 @@ describe("GoogleButton", () => {
     ).toBeInTheDocument();
   });
 
-  it("includes hidden redirectTo input with the provided value", () => {
-    const { container } = render(<GoogleButton redirectTo="/training" />);
-    const hidden = container.querySelector('input[name="redirectTo"]');
-    expect(hidden).toHaveValue("/training");
-  });
-
-  it("invokes the action on submit with redirectTo", async () => {
-    signInWithGoogleAction.mockResolvedValue(undefined);
+  it("calls signInWithOAuth with correct params on click", async () => {
+    signInWithOAuthMock.mockResolvedValue({
+      data: { url: "https://accounts.google.com/o/oauth2/auth?test=1" },
+      error: null,
+    });
     const user = userEvent.setup();
     render(<GoogleButton redirectTo="/dashboard" />);
 
     await user.click(screen.getByRole("button", { name: /continuar con google/i }));
 
-    await waitFor(() => expect(signInWithGoogleAction).toHaveBeenCalledTimes(1));
-    const fd = signInWithGoogleAction.mock.calls[0][1] as FormData;
-    expect(fd.get("redirectTo")).toBe("/dashboard");
+    await waitFor(() => expect(signInWithOAuthMock).toHaveBeenCalledTimes(1));
+    expect(signInWithOAuthMock).toHaveBeenCalledWith({
+      provider: "google",
+      options: {
+        redirectTo: "http://localhost:3000/auth/callback?next=%2Fdashboard",
+        queryParams: { access_type: "offline", prompt: "consent" },
+      },
+    });
   });
 
-  it("shows error message when the action returns an error", async () => {
-    signInWithGoogleAction.mockResolvedValue({
-      error: "No hemos podido conectar con Google. Inténtalo de nuevo.",
+  it("redirects to the OAuth url returned by Supabase", async () => {
+    const oauthUrl = "https://accounts.google.com/o/oauth2/auth?test=1";
+    signInWithOAuthMock.mockResolvedValue({
+      data: { url: oauthUrl },
+      error: null,
     });
     const user = userEvent.setup();
     render(<GoogleButton />);
 
     await user.click(screen.getByRole("button", { name: /continuar con google/i }));
+
+    await waitFor(() => expect(window.location.href).toBe(oauthUrl));
+  });
+
+  it("shows error message when Supabase returns no url", async () => {
+    signInWithOAuthMock.mockResolvedValue({ data: { url: null }, error: null });
+    const user = userEvent.setup();
+    render(<GoogleButton />);
+
+    await user.click(screen.getByRole("button", { name: /continuar con google/i }));
+
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(/no hemos podido conectar/i);
+  });
+
+  it("shows error message when Supabase errors", async () => {
+    signInWithOAuthMock.mockResolvedValue({
+      data: { url: null },
+      error: { message: "boom" },
+    });
+    const user = userEvent.setup();
+    render(<GoogleButton />);
+
+    await user.click(screen.getByRole("button", { name: /continuar con google/i }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(/no hemos podido conectar/i);
+  });
+
+  it("disables the button while pending", async () => {
+    let resolve: (v: unknown) => void;
+    signInWithOAuthMock.mockReturnValue(new Promise((r) => (resolve = r)));
+    const user = userEvent.setup();
+    render(<GoogleButton />);
+
+    const btn = screen.getByRole("button", { name: /continuar con google/i });
+    await user.click(btn);
+
+    expect(btn).toBeDisabled();
+
+    resolve!({ data: { url: null }, error: { message: "x" } });
   });
 });

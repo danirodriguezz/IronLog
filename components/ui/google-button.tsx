@@ -1,8 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
-import { signInWithGoogleAction } from "@/app/(auth)/actions";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type GoogleButtonProps = {
   redirectTo?: string;
@@ -30,47 +29,63 @@ const GoogleGlyph = () => (
   </svg>
 );
 
-const Inner = ({ label }: { label: string }) => {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="group relative h-12 w-full overflow-hidden rounded-[14px] border border-white/10 bg-ink-800/60 text-ink-50 font-medium tracking-tight transition-all duration-300 hover:border-white/20 hover:bg-ink-800 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
-    >
-      <span className="relative z-10 inline-flex items-center justify-center gap-2.5 text-[14px]">
-        {pending ? (
-          <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.2" strokeWidth="3" />
-            <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-          </svg>
-        ) : (
-          <GoogleGlyph />
-        )}
-        {label}
-      </span>
-    </button>
-  );
-};
-
 export const GoogleButton = ({
   redirectTo = "/dashboard",
   label = "Continuar con Google",
 }: GoogleButtonProps) => {
-  const [state, formAction] = useActionState(signInWithGoogleAction, undefined);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleClick = async () => {
+    setPending(true);
+    setError(null);
+
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
+      },
+    });
+
+    if (error || !data?.url) {
+      setError("No hemos podido conectar con Google. Inténtalo de nuevo.");
+      setPending(false);
+      return;
+    }
+
+    window.location.href = data.url;
+  };
 
   return (
-    <form action={formAction} className="space-y-2">
-      <input type="hidden" name="redirectTo" value={redirectTo} />
-      <Inner label={label} />
-      {state?.error ? (
-        <p
-          role="alert"
-          className="text-[12px] text-ember-400 text-center"
-        >
-          {state.error}
+    <div className="space-y-2">
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={pending}
+        className="group relative h-12 w-full overflow-hidden rounded-md border border-white/10 bg-ink-800/60 text-ink-50 font-medium tracking-tight transition-all duration-300 hover:border-white/20 hover:bg-ink-800 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        <span className="relative z-10 inline-flex items-center justify-center gap-2.5 text-[14px]">
+          {pending ? (
+            <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.2" strokeWidth="3" />
+              <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <GoogleGlyph />
+          )}
+          {label}
+        </span>
+      </button>
+      {error ? (
+        <p role="alert" className="text-[12px] text-ember-400 text-center">
+          {error}
         </p>
       ) : null}
-    </form>
+    </div>
   );
 };

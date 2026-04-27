@@ -9,7 +9,6 @@ const { redirectMock, supabaseMock } = vi.hoisted(() => {
       signInWithPassword: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-      signInWithOAuth: vi.fn(),
       resetPasswordForEmail: vi.fn(),
       getUser: vi.fn(),
       updateUser: vi.fn(),
@@ -27,7 +26,6 @@ import {
   signInAction,
   signUpAction,
   signOutAction,
-  signInWithGoogleAction,
   requestPasswordResetAction,
   updatePasswordAction,
 } from "@/app/(auth)/actions";
@@ -167,47 +165,6 @@ describe("signOutAction", () => {
     supabaseMock.auth.signOut.mockResolvedValue({ error: null });
     await expectRedirect(signOutAction(), "/login");
     expect(supabaseMock.auth.signOut).toHaveBeenCalled();
-  });
-});
-
-describe("signInWithGoogleAction", () => {
-  it("redirects to the OAuth url returned by Supabase", async () => {
-    supabaseMock.auth.signInWithOAuth.mockResolvedValue({
-      data: { url: "https://accounts.google.com/o/oauth2/auth?..." },
-      error: null,
-    });
-    await expectRedirect(
-      signInWithGoogleAction(undefined, formData({ redirectTo: "/dashboard" })),
-      "https://accounts.google.com/o/oauth2/auth?...",
-    );
-    expect(supabaseMock.auth.signInWithOAuth).toHaveBeenCalledWith({
-      provider: "google",
-      options: {
-        redirectTo:
-          "http://localhost:3000/auth/callback?next=%2Fdashboard",
-        queryParams: { access_type: "offline", prompt: "consent" },
-      },
-    });
-  });
-
-  it("returns error when Supabase responds without url", async () => {
-    supabaseMock.auth.signInWithOAuth.mockResolvedValue({
-      data: { url: null },
-      error: null,
-    });
-    const result = await signInWithGoogleAction(undefined, formData({}));
-    expect(result).toEqual({
-      error: "No hemos podido conectar con Google. Inténtalo de nuevo.",
-    });
-  });
-
-  it("returns error when Supabase errors", async () => {
-    supabaseMock.auth.signInWithOAuth.mockResolvedValue({
-      data: { url: null },
-      error: { message: "boom" },
-    });
-    const result = await signInWithGoogleAction(undefined, formData({}));
-    expect(result?.error).toBeDefined();
   });
 });
 

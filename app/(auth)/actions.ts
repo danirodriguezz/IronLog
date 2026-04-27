@@ -70,30 +70,6 @@ export const signOutAction = async () => {
   redirect("/login");
 };
 
-export const signInWithGoogleAction = async (
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> => {
-  const redirectTo = String(formData.get("redirectTo") ?? "/dashboard");
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${getOrigin()}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
-      queryParams: {
-        access_type: "offline",
-        prompt: "consent",
-      },
-    },
-  });
-
-  if (error || !data?.url) {
-    return { error: "No hemos podido conectar con Google. Inténtalo de nuevo." };
-  }
-
-  redirect(data.url);
-};
 
 export const requestPasswordResetAction = async (
   _prev: ActionState,
