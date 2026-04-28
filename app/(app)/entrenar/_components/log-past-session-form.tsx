@@ -27,7 +27,7 @@ export const LogPastSessionForm = ({
       <button
         onClick={() => setOpen(true)}
         disabled={hasActiveSession}
-        className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400 transition-colors hover:text-mineral-200 disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex items-center gap-1.5 rounded-full border border-ink-600 bg-ink-900/60 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-200 transition-colors hover:border-mineral-400 hover:text-mineral-200 disabled:cursor-not-allowed disabled:opacity-40"
       >
         + Añadir sesión pasada
       </button>
@@ -37,7 +37,7 @@ export const LogPastSessionForm = ({
   return (
     <form
       action={logPastSessionAction}
-      className="hairline mt-3 rounded-2xl bg-ink-900/50 p-5 space-y-5"
+      className="hairline rounded-2xl bg-ink-900/50 p-5 space-y-5"
     >
       <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-mineral-300">
         Registrar entreno pasado
