@@ -58,7 +58,7 @@ export const LogPastSessionForm = ({
             defaultValue={yesterdayISO()}
             max={todayISO()}
             required
-            className="w-full rounded-[14px] border border-ink-700 bg-ink-800/80 px-3 py-2.5 font-mono text-sm text-ink-100 transition-colors focus:border-mineral-400 focus:outline-none [color-scheme:dark]"
+            className="w-full rounded-md border border-ink-700 bg-ink-800/80 px-3 py-2.5 font-mono text-sm text-ink-100 transition-colors focus:border-mineral-400 focus:outline-none scheme:dark"
           />
         </div>
 
@@ -74,7 +74,7 @@ export const LogPastSessionForm = ({
             name="routineId"
             required
             defaultValue=""
-            className="w-full rounded-[14px] border border-ink-700 bg-ink-800/80 px-3 py-2.5 font-mono text-sm text-ink-100 transition-colors focus:border-mineral-400 focus:outline-none [color-scheme:dark]"
+            className="w-full rounded-md border border-ink-700 bg-ink-800/80 px-3 py-2.5 font-mono text-sm text-ink-100 transition-colors focus:border-mineral-400 focus:outline-none scheme:dark"
           >
             <option value="" disabled>
               Selecciona una rutina
