@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 
 type ActionState = { error?: string; success?: string } | undefined;
 
-const getOrigin = () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const getOrigin = () => process.env.NEXT_PUBLIC_SITE_URL;
 
 export const signInAction = async (
   _prev: ActionState,
