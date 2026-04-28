@@ -134,7 +134,9 @@ const replaceSets = async (
     }));
 
   if (rows.length > 0) {
-    const { error: insErr } = await supabase.from("sets").insert(rows);
+    // exercise_id is NOT NULL in the schema but filled by a BEFORE INSERT trigger from session_exercises
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: insErr } = await supabase.from("sets").insert(rows as any);
     if (insErr) return "No hemos podido guardar los sets.";
   }
   return null;

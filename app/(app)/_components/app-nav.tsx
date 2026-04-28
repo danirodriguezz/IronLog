@@ -199,21 +199,6 @@ export const AppHeader = ({
           </button>
         </div>
 
-        <div className="px-6 py-4 border-b border-white/6 flex flex-col gap-3">
-          <UserSearch variant="full" />
-          <Link
-            href="/profile/solicitudes"
-            className="flex items-center justify-between gap-3 px-4 py-3 rounded-md text-[13px] text-ink-300 bg-ink-900/60 hairline hover:text-ink-50 transition-colors"
-          >
-            <span className="font-mono text-[11px] uppercase tracking-[0.2em]">Solicitudes</span>
-            {pendingRequests > 0 && (
-              <span className="min-w-5 h-5 px-1.5 rounded-full bg-ember-500 text-ink-950 font-mono text-[10px] leading-5 text-center font-semibold tabular-nums">
-                {pendingRequests > 9 ? "9+" : pendingRequests}
-              </span>
-            )}
-          </Link>
-        </div>
-
         <div className="flex flex-col flex-1 py-2">
           {ITEMS.map(({ href, label, disabled }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`);

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getDayLongLabel } from "@/lib/week";
 import { StatCard } from "./_components/stat-card";
+import { AiCoachCard } from "./_components/ai-coach-card";
 
 type NextRoutine = { id: string; name: string; day_of_week: number | null };
 
@@ -189,7 +190,11 @@ const DashboardPage = async (): Promise<React.ReactElement> => {
         />
       </section>
 
-      <section className="mt-16">
+      <section aria-label="AI Coach" className="mt-8">
+        <AiCoachCard />
+      </section>
+
+      <section className="mt-8">
         <div className="hairline rounded-2xl bg-ink-900/40 p-8 md:p-10">
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-300">
             Siguiente paso
