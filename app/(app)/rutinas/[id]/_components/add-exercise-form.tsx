@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { Field } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { addRoutineExerciseAction } from "../../actions";
@@ -18,12 +18,29 @@ export type ExerciseOption = {
 type Props = {
   routineId: string;
   exercises: ExerciseOption[];
+  onSuccess?: () => void;
 };
 
-export const AddExerciseForm = ({ routineId, exercises }: Props): React.ReactElement => {
-  const [state, formAction] = useActionState(addRoutineExerciseAction, undefined);
+export const AddExerciseForm = ({ routineId, exercises, onSuccess }: Props): React.ReactElement => {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const onSuccessRef = useRef(onSuccess);
+  useEffect(() => { onSuccessRef.current = onSuccess; }, [onSuccess]);
+
+  const wrappedAction = async (
+    prev: Awaited<ReturnType<typeof addRoutineExerciseAction>>,
+    formData: FormData,
+  ) => {
+    const result = await addRoutineExerciseAction(prev, formData);
+    if (result?.success) {
+      setQuery("");
+      setSelectedId(null);
+      onSuccessRef.current?.();
+    }
+    return result;
+  };
+
+  const [state, formAction] = useActionState(wrappedAction, undefined);
 
   const selected = useMemo(
     () => exercises.find((e) => e.id === selectedId) ?? null,

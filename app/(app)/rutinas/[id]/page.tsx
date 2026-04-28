@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AddExerciseForm, type ExerciseOption } from "./_components/add-exercise-form";
+import { AddExerciseTrigger } from "./_components/add-exercise-trigger";
 import { RemoveExerciseButton } from "./_components/remove-exercise-button";
 import { DeleteRoutineButton } from "./_components/delete-routine-button";
 
@@ -131,13 +132,14 @@ const RoutineDetailPage = async ({
             ))}
             {items.length === 0 ? (
               <li className="hairline rounded-2xl bg-ink-900/40 p-8 text-ink-200">
-                Esta rutina todavía no tiene ejercicios. Añade el primero desde el catálogo.
+                Esta rutina todavía no tiene ejercicios. Toca el botón + para añadir el primero.
               </li>
             ) : null}
           </ol>
         </div>
 
-        <aside className="hairline h-fit rounded-2xl bg-ink-900/50 p-6">
+        {/* Desktop sidebar — hidden on mobile */}
+        <aside className="hairline hidden h-fit rounded-2xl bg-ink-900/50 p-6 lg:block">
           <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-mineral-300">
             Añadir ejercicio
           </p>
@@ -149,6 +151,9 @@ const RoutineDetailPage = async ({
           </div>
         </aside>
       </section>
+
+      {/* Mobile FAB + bottom-sheet */}
+      <AddExerciseTrigger routineId={routine.id} exercises={catalog} />
     </div>
   );
 };
