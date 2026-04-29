@@ -22,9 +22,11 @@ const OUTER_R = 72;
 const INNER_R = 48;
 const GAP_ANGLE = 1.8;
 
+const round = (n: number) => Math.round(n * 1e10) / 1e10;
+
 const polarToXY = (cx: number, cy: number, r: number, angleDeg: number) => {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
-  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  return { x: round(cx + r * Math.cos(rad)), y: round(cy + r * Math.sin(rad)) };
 };
 
 const arcPath = (
