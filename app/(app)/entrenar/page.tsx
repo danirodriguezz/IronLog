@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getDayLongLabel } from "@/lib/week";
-import { startSessionAction } from "./actions";
 import { LogPastSessionForm } from "./_components/log-past-session-form";
+import { StartSessionButton } from "./_components/start-session-button";
 
 type TodayRoutine = {
   id: string;
@@ -146,16 +146,12 @@ const EntrenarPage = async (): Promise<React.ReactElement> => {
                 ) : null}
               </div>
 
-              <form action={startSessionAction} className="shrink-0">
-                <input type="hidden" name="routineId" value={todayRoutine.id} />
-                <button
-                  type="submit"
+              <div className="shrink-0">
+                <StartSessionButton
+                  routineId={todayRoutine.id}
                   disabled={Boolean(activeSession) || todayRoutine.exerciseCount === 0}
-                  className="inline-flex min-h-13 items-center justify-center rounded-full bg-mineral-300 px-7 font-mono text-[12px] uppercase tracking-[0.22em] text-ink-950 transition-all hover:bg-mineral-200 focus:outline-none focus:ring-2 focus:ring-mineral-400 focus:ring-offset-2 focus:ring-offset-ink-950 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Empezar entreno
-                </button>
-              </form>
+                />
+              </div>
             </div>
             {todayRoutine.exerciseCount === 0 ? (
               <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.22em] text-ember-400">
@@ -176,24 +172,13 @@ const EntrenarPage = async (): Promise<React.ReactElement> => {
           <ul className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             {other.map((r) => (
               <li key={r.id}>
-                <form action={startSessionAction}>
-                  <input type="hidden" name="routineId" value={r.id} />
-                  <button
-                    type="submit"
-                    disabled={Boolean(activeSession)}
-                    className="hairline group flex w-full min-h-15 items-center justify-between gap-3 rounded-2xl bg-ink-900/40 px-4 py-3 text-left transition-colors hover:bg-ink-900/70 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-display text-base leading-tight">{r.name}</p>
-                      <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-400">
-                        {r.day_of_week ? getDayLongLabel(r.day_of_week) : "Sin día"}
-                      </p>
-                    </div>
-                    <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-300 transition-colors group-hover:text-mineral-200">
-                      Iniciar →
-                    </span>
-                  </button>
-                </form>
+                <StartSessionButton
+                  routineId={r.id}
+                  disabled={Boolean(activeSession)}
+                  variant="secondary"
+                  label={r.name}
+                  subtitle={r.day_of_week ? getDayLongLabel(r.day_of_week) : "Sin día"}
+                />
               </li>
             ))}
           </ul>
