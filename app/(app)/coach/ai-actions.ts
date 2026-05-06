@@ -1,6 +1,6 @@
 "use server";
 
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { createGroq } from "@ai-sdk/groq";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
@@ -424,13 +424,13 @@ INSTRUCCIONES OBLIGATORIAS PARA EL JSON:
 
   let feedback: WeeklyFeedback;
   try {
-    const result = await generateObject({
+    const { output } = await generateText({
       model: groq("meta-llama/llama-4-scout-17b-16e-instruct"),
-      schema: feedbackSchema,
+      output: Output.object({ schema: feedbackSchema }),
       system: systemPrompt,
       prompt: "Genera el informe semanal de entrenamiento para este atleta.",
     });
-    feedback = result.object;
+    feedback = output;
   } catch (err) {
     console.error("[generateWeeklyFeedback] model error:", err);
     return { ok: false, reason: "error" };

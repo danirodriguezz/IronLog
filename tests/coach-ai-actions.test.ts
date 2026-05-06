@@ -7,7 +7,7 @@ const {
   setQueryResult,
   getBuilders,
   resetBuilders,
-  generateObjectMock,
+  generateTextMock,
   revalidatePathMock,
 } = vi.hoisted(() => {
   type QueryResult = { data?: unknown; error?: { message: string } | null };
@@ -67,7 +67,7 @@ const {
     from: vi.fn((table: string) => makeBuilder(table)),
   };
 
-  const generateObjectMock = vi.fn();
+  const generateTextMock = vi.fn();
   const revalidatePathMock = vi.fn();
 
   return {
@@ -75,7 +75,7 @@ const {
     setQueryResult,
     getBuilders,
     resetBuilders,
-    generateObjectMock,
+    generateTextMock,
     revalidatePathMock,
   };
 });
@@ -85,7 +85,10 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 vi.mock("ai", () => ({
-  generateObject: generateObjectMock,
+  generateText: generateTextMock,
+  Output: {
+    object: vi.fn(({ schema }) => ({ type: "object", schema })),
+  },
 }));
 
 vi.mock("@ai-sdk/groq", () => ({
@@ -412,7 +415,7 @@ describe("generateWeeklyFeedback", () => {
     const result = await generateWeeklyFeedback();
 
     expect(result).toEqual({ ok: false, reason: "unauthenticated" });
-    expect(generateObjectMock).not.toHaveBeenCalled();
+    expect(generateTextMock).not.toHaveBeenCalled();
   });
 
   it("devuelve el insight cacheado sin llamar a la IA si tiene menos de 7 días", async () => {
@@ -434,12 +437,12 @@ describe("generateWeeklyFeedback", () => {
       expect(result.insight.feedback).toEqual(mockFeedback);
       expect(result.insight.isStale).toBe(false);
     }
-    expect(generateObjectMock).not.toHaveBeenCalled();
+    expect(generateTextMock).not.toHaveBeenCalled();
   });
 
   it("llama a la IA si el caché tiene más de 7 días", async () => {
     const oldDate = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
-    generateObjectMock.mockResolvedValue({ object: mockFeedback });
+    generateTextMock.mockResolvedValue({ output: mockFeedback });
 
     setQueryResult(
       { data: { id: "old", feedback: mockFeedback, created_at: oldDate, applied_recommendations: [] }, error: null },
@@ -453,12 +456,12 @@ describe("generateWeeklyFeedback", () => {
 
     const result = await generateWeeklyFeedback();
 
-    expect(generateObjectMock).toHaveBeenCalledTimes(1);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
     expect(result.ok).toBe(true);
   });
 
   it("llama a la IA si no hay caché", async () => {
-    generateObjectMock.mockResolvedValue({ object: mockFeedback });
+    generateTextMock.mockResolvedValue({ output: mockFeedback });
 
     setQueryResult(
       { data: null, error: null }, // sin caché
@@ -472,12 +475,12 @@ describe("generateWeeklyFeedback", () => {
 
     const result = await generateWeeklyFeedback();
 
-    expect(generateObjectMock).toHaveBeenCalledTimes(1);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
     expect(result.ok).toBe(true);
   });
 
   it("devuelve incomplete_profile si falta edad, peso u objetivo", async () => {
-    generateObjectMock.mockResolvedValue({ object: mockFeedback });
+    generateTextMock.mockResolvedValue({ output: mockFeedback });
 
     const incompleteProfile = { ...mockProfile, age: null, weight_kg: null, primary_goal: null, goal: null };
     setQueryResult(
@@ -492,11 +495,11 @@ describe("generateWeeklyFeedback", () => {
     const result = await generateWeeklyFeedback();
 
     expect(result).toEqual({ ok: false, reason: "incomplete_profile" });
-    expect(generateObjectMock).not.toHaveBeenCalled();
+    expect(generateTextMock).not.toHaveBeenCalled();
   });
 
   it("devuelve insufficient_data si no hay sesiones en los últimos 7 días", async () => {
-    generateObjectMock.mockResolvedValue({ object: mockFeedback });
+    generateTextMock.mockResolvedValue({ output: mockFeedback });
 
     const oldSession = {
       ...recentSession,
@@ -514,7 +517,7 @@ describe("generateWeeklyFeedback", () => {
     const result = await generateWeeklyFeedback();
 
     expect(result).toEqual({ ok: false, reason: "insufficient_data" });
-    expect(generateObjectMock).not.toHaveBeenCalled();
+    expect(generateTextMock).not.toHaveBeenCalled();
   });
 
   it("filtra recomendaciones con routineExerciseId ajeno al usuario", async () => {
@@ -539,7 +542,7 @@ describe("generateWeeklyFeedback", () => {
       ],
     };
 
-    generateObjectMock.mockResolvedValue({ object: feedbackWithInvalidRec });
+    generateTextMock.mockResolvedValue({ output: feedbackWithInvalidRec });
 
     setQueryResult(
       { data: null, error: null },
@@ -572,7 +575,7 @@ describe("generateWeeklyFeedback", () => {
       ],
     };
 
-    generateObjectMock.mockResolvedValue({ object: feedbackWithBadRoutine });
+    generateTextMock.mockResolvedValue({ output: feedbackWithBadRoutine });
 
     setQueryResult(
       { data: null, error: null },
@@ -594,7 +597,7 @@ describe("generateWeeklyFeedback", () => {
 
   it("devuelve error si el modelo falla", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
-    generateObjectMock.mockRejectedValue(new Error("API error"));
+    generateTextMock.mockRejectedValue(new Error("API error"));
 
     setQueryResult(
       { data: null, error: null },
@@ -611,7 +614,7 @@ describe("generateWeeklyFeedback", () => {
   });
 
   it("el prompt incluye el objetivo principal del usuario", async () => {
-    generateObjectMock.mockResolvedValue({ object: mockFeedback });
+    generateTextMock.mockResolvedValue({ output: mockFeedback });
 
     setQueryResult(
       { data: null, error: null },
@@ -625,14 +628,14 @@ describe("generateWeeklyFeedback", () => {
 
     await generateWeeklyFeedback();
 
-    const { system } = generateObjectMock.mock.calls[0][0];
+    const { system } = generateTextMock.mock.calls[0][0];
     expect(system).toContain("hipertrofia");
     expect(system).toContain("75 kg");
     expect(system).toContain("28 años");
   });
 
   it("el prompt incluye los routine_exercise_id para que la IA pueda referenciarlos", async () => {
-    generateObjectMock.mockResolvedValue({ object: mockFeedback });
+    generateTextMock.mockResolvedValue({ output: mockFeedback });
 
     setQueryResult(
       { data: null, error: null },
@@ -646,13 +649,13 @@ describe("generateWeeklyFeedback", () => {
 
     await generateWeeklyFeedback();
 
-    const { system } = generateObjectMock.mock.calls[0][0];
+    const { system } = generateTextMock.mock.calls[0][0];
     expect(system).toContain("re-1");
     expect(system).toContain("re-2");
   });
 
   it("guarda el feedback en ai_insights con applied_recommendations vacío", async () => {
-    generateObjectMock.mockResolvedValue({ object: mockFeedback });
+    generateTextMock.mockResolvedValue({ output: mockFeedback });
 
     setQueryResult(
       { data: null, error: null },
@@ -677,7 +680,7 @@ describe("generateWeeklyFeedback", () => {
 
   it("devuelve error si el insert falla", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
-    generateObjectMock.mockResolvedValue({ object: mockFeedback });
+    generateTextMock.mockResolvedValue({ output: mockFeedback });
 
     setQueryResult(
       { data: null, error: null },
