@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   discardSessionAction,
@@ -816,6 +817,29 @@ type ConfirmProps = {
   onCancel: () => void;
 };
 
+const DiscardSubmitButton = (): React.ReactElement => {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ember-500 px-5 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-950 transition-colors hover:bg-ember-400 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+    >
+      {pending ? (
+        <>
+          <span
+            className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-ink-950/30 border-t-ink-950"
+            aria-hidden="true"
+          />
+          Descartando…
+        </>
+      ) : (
+        "Sí, descartar"
+      )}
+    </button>
+  );
+};
+
 const ConfirmDiscard = ({ sessionId, onCancel }: ConfirmProps): React.ReactElement => (
   <div
     role="dialog"
@@ -841,12 +865,7 @@ const ConfirmDiscard = ({ sessionId, onCancel }: ConfirmProps): React.ReactEleme
         </button>
         <form action={discardSessionAction}>
           <input type="hidden" name="sessionId" value={sessionId} />
-          <button
-            type="submit"
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ember-500 px-5 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-950 transition-colors hover:bg-ember-400 sm:w-auto"
-          >
-            Sí, descartar
-          </button>
+          <DiscardSubmitButton />
         </form>
       </div>
     </div>

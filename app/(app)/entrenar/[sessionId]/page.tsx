@@ -92,7 +92,7 @@ const ActiveSessionPage = async ({
           .eq("routine_id", session.routine_id)
           .returns<RoutineTargetRow[]>()
       : Promise.resolve({ data: [] as RoutineTargetRow[] }),
-    fetchLastPerformance(supabase, user.id, exerciseIds, sessionId),
+    fetchLastPerformance(supabase, user.id, exerciseIds, sessionId, session.routine_id),
   ]);
 
   const targetByExercise = new Map(
@@ -164,24 +164,31 @@ const fetchLastPerformance = async (
   userId: string,
   exerciseIds: string[],
   excludeSessionId: string,
+  routineId: string | null,
 ): Promise<Map<string, LastPerformance>> => {
   const result = new Map<string, LastPerformance>();
   if (exerciseIds.length === 0) return result;
 
   for (const exerciseId of exerciseIds) {
-    const { data: last } = await supabase
+    let query = supabase
       .from("session_exercises")
-      .select("id, session_id, sessions!inner(id, name, started_at, status)")
+      .select("id, session_id, sessions!inner(id, name, started_at, status, routine_id)")
       .eq("exercise_id", exerciseId)
       .eq("user_id", userId)
       .eq("sessions.status", "completed")
-      .neq("session_id", excludeSessionId)
+      .neq("session_id", excludeSessionId);
+
+    if (routineId) {
+      query = query.eq("sessions.routine_id", routineId);
+    }
+
+    const { data: last } = await query
       .order("sessions(started_at)", { ascending: false })
       .limit(1)
       .maybeSingle<{
         id: string;
         session_id: string;
-        sessions: { id: string; name: string; started_at: string; status: string } | null;
+        sessions: { id: string; name: string; started_at: string; status: string; routine_id: string | null } | null;
       }>();
 
     if (!last) continue;
