@@ -12,6 +12,11 @@ type Profile = {
   weight_kg: number | null;
   goal: string | null;
   is_public: boolean;
+  primary_goal: string | null;
+  secondary_goal: string | null;
+  weekly_session_target: number | null;
+  goal_notes: string | null;
+  experience_level: string | null;
 };
 
 const ProfilePage = async (): Promise<React.ReactElement> => {
@@ -25,7 +30,7 @@ const ProfilePage = async (): Promise<React.ReactElement> => {
   const [profileRes, sessionsRes, followersRes, followingRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("username, full_name, avatar_url, age, weight_kg, goal, is_public")
+      .select("username, full_name, avatar_url, age, weight_kg, goal, is_public, primary_goal, secondary_goal, weekly_session_target, goal_notes, experience_level")
       .eq("id", user.id)
       .single<Profile>(),
     supabase

@@ -12,11 +12,59 @@ type Profile = {
   weight_kg: number | null;
   goal: string | null;
   is_public: boolean;
+  primary_goal: string | null;
+  secondary_goal: string | null;
+  weekly_session_target: number | null;
+  goal_notes: string | null;
+  experience_level: string | null;
 };
 
 type ProfileFormProps = {
   profile: Profile;
 };
+
+const GOAL_OPTIONS = [
+  { value: "hipertrofia", label: "Hipertrofia" },
+  { value: "fuerza", label: "Fuerza" },
+  { value: "resistencia", label: "Resistencia" },
+  { value: "perder_grasa", label: "Perder grasa" },
+  { value: "salud_general", label: "Salud general" },
+  { value: "rendimiento", label: "Rendimiento" },
+] as const;
+
+const LEVEL_OPTIONS = [
+  { value: "beginner", label: "Principiante" },
+  { value: "intermediate", label: "Intermedio" },
+  { value: "advanced", label: "Avanzado" },
+] as const;
+
+type SelectFieldProps = {
+  label: string;
+  name: string;
+  defaultValue: string | null;
+  options: readonly { value: string; label: string }[];
+  placeholder?: string;
+};
+
+const SelectField = ({ label, name, defaultValue, options, placeholder = "Sin especificar" }: SelectFieldProps): React.ReactElement => (
+  <div className="relative">
+    <label className="block font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400 mb-2">
+      {label}
+    </label>
+    <select
+      name={name}
+      defaultValue={defaultValue ?? ""}
+      className="w-full rounded-md border border-white/10 bg-ink-800/60 px-4 py-3 text-sm text-ink-100 transition-colors hover:border-white/20 focus:border-mineral-400/60 focus:outline-none appearance-none"
+    >
+      <option value="">{placeholder}</option>
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  </div>
+);
 
 export const ProfileForm = ({ profile }: ProfileFormProps): React.ReactElement => {
   const [state, action] = useActionState(updateProfileAction, undefined);
@@ -61,14 +109,67 @@ export const ProfileForm = ({ profile }: ProfileFormProps): React.ReactElement =
         />
       </div>
 
+      {/* Sección objetivos para la IA */}
+      <div className="pt-2">
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-mineral-400 mb-4">
+          Objetivos · usados por el AI Coach
+        </p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <SelectField
+              label="Objetivo principal"
+              name="primary_goal"
+              defaultValue={profile.primary_goal}
+              options={GOAL_OPTIONS}
+            />
+            <SelectField
+              label="Objetivo secundario"
+              name="secondary_goal"
+              defaultValue={profile.secondary_goal}
+              options={GOAL_OPTIONS}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <SelectField
+              label="Nivel de experiencia"
+              name="experience_level"
+              defaultValue={profile.experience_level}
+              options={LEVEL_OPTIONS}
+            />
+            <Field
+              label="Sesiones objetivo por semana"
+              name="weekly_session_target"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={7}
+              defaultValue={profile.weekly_session_target ?? ""}
+            />
+          </div>
+
+          <div>
+            <label className="block font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400 mb-2">
+              Notas para el entrenador
+            </label>
+            <textarea
+              name="goal_notes"
+              defaultValue={profile.goal_notes ?? ""}
+              rows={3}
+              placeholder="Lesiones, preferencias, contexto que el AI Coach debe saber..."
+              className="w-full rounded-md border border-white/10 bg-ink-800/60 px-4 py-3 text-sm text-ink-100 placeholder:text-ink-500 transition-colors hover:border-white/20 focus:border-mineral-400/60 focus:outline-none resize-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Campo goal legacy — visible como "descripción corta de perfil" */}
       <Field
-        label="Objetivo"
+        label="Descripción del perfil (visible públicamente)"
         name="goal"
         defaultValue={profile.goal ?? ""}
       />
 
-      {/* Privacy toggle — checkbox value "true" only submits when checked;
-          the action reads formData.get("is_public") === "true" */}
       <div className="flex items-center justify-between rounded-md border border-white/10 bg-ink-800/60 px-4 py-3.5 transition-colors hover:border-white/20">
         <div>
           <p className="text-[15px] text-ink-50">Perfil público</p>

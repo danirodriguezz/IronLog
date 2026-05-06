@@ -1,9 +1,7 @@
-"use client";
-
-import { useState, useTransition } from "react";
-import { Brain, TrendingUp, Zap, RefreshCw, UserCog } from "lucide-react";
 import Link from "next/link";
-import { generateWeeklyFeedback, type WeeklyFeedback } from "@/app/(app)/progreso/ai-actions";
+import { Brain, ArrowRight } from "lucide-react";
+import { getCachedFeedback } from "@/app/(app)/coach/ai-actions";
+import { getDayLongLabel } from "@/lib/week";
 
 const scoreColor = (score: number): string => {
   if (score < 4) return "bg-ember-500";
@@ -17,80 +15,14 @@ const scoreLabel = (score: number): string => {
   return "Alta";
 };
 
-const Skeleton = (): React.ReactElement => (
-  <div className="mt-6 space-y-3 animate-pulse">
-    <div className="h-3 w-3/4 rounded-full bg-ink-700" />
-    <div className="h-3 w-full rounded-full bg-ink-700" />
-    <div className="h-3 w-5/6 rounded-full bg-ink-700" />
-    <div className="mt-5 h-3 w-2/3 rounded-full bg-ink-700" />
-    <div className="h-3 w-full rounded-full bg-ink-700" />
-    <div className="mt-5 h-3 w-3/4 rounded-full bg-ink-700" />
-    <div className="h-3 w-5/6 rounded-full bg-ink-700" />
-  </div>
-);
-
-type FeedbackRowProps = {
-  icon: React.ReactElement;
-  label: string;
-  text: string;
+const isoToday = (): number => {
+  const d = new Date().getDay();
+  return d === 0 ? 7 : d;
 };
 
-const FeedbackRow = ({ icon, label, text }: FeedbackRowProps): React.ReactElement => (
-  <div className="flex gap-3">
-    <div className="mt-0.5 shrink-0 text-mineral-400">{icon}</div>
-    <div>
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">{label}</p>
-      <p className="mt-1 text-sm leading-relaxed text-ink-100">{text}</p>
-    </div>
-  </div>
-);
-
-type AdherenceBarProps = { score: number };
-
-const AdherenceBar = ({ score }: AdherenceBarProps): React.ReactElement => (
-  <div>
-    <div className="flex items-center justify-between">
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">
-        Consistencia
-      </p>
-      <span className="font-mono text-[10px] text-ink-300">
-        {score}/10 · {scoreLabel(score)}
-      </span>
-    </div>
-    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-700">
-      <div
-        className={`h-full rounded-full transition-all duration-700 ${scoreColor(score)}`}
-        style={{ width: `${score * 10}%` }}
-      />
-    </div>
-  </div>
-);
-
-type CardState = "idle" | "incomplete_profile" | "error";
-
-export const AiCoachCard = (): React.ReactElement => {
-  const [feedback, setFeedback] = useState<WeeklyFeedback | null>(null);
-  const [state, setState] = useState<CardState>("idle");
-  const [isPending, startTransition] = useTransition();
-
-  const handleGenerate = (): void => {
-    setState("idle");
-    startTransition(async () => {
-      try {
-        const result = await generateWeeklyFeedback();
-        if (result.ok) {
-          setFeedback(result.feedback);
-        } else if (result.reason === "incomplete_profile") {
-          setState("incomplete_profile");
-        } else {
-          setState("error");
-        }
-      } catch (err) {
-        console.error("[AiCoachCard]", err);
-        setState("error");
-      }
-    });
-  };
+export const AiCoachCard = async (): Promise<React.ReactElement> => {
+  const insight = await getCachedFeedback();
+  const today = isoToday();
 
   return (
     <article className="relative overflow-hidden rounded-2xl hairline bg-ink-900/50 p-6">
@@ -102,97 +34,90 @@ export const AiCoachCard = (): React.ReactElement => {
       <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-mineral-400">
         AI Coach
       </p>
-      <p className="mt-4 font-display text-3xl leading-none tracking-tight text-ink-50">
-        Feedback semanal
-      </p>
 
-      {/* Estado de carga */}
-      {isPending && <Skeleton />}
-
-      {/* Estado de perfil incompleto */}
-      {!isPending && state === "incomplete_profile" && (
-        <div className="mt-6 space-y-4">
-          <p className="text-sm text-ink-200">
-            Para generar un análisis personalizado necesitamos conocer tu{" "}
-            <span className="text-ink-50">edad</span>,{" "}
-            <span className="text-ink-50">peso</span> y{" "}
-            <span className="text-ink-50">objetivo</span>. Completa tu perfil y vuelve aquí.
+      {!insight ? (
+        <>
+          <p className="mt-4 font-display text-3xl leading-none tracking-tight text-ink-50">
+            Informe semanal
+          </p>
+          <p className="mt-4 text-sm text-ink-300">
+            Genera tu primer informe personalizado para recibir tu plan de entrenamiento de la semana.
           </p>
           <Link
-            href="/profile"
-            className="inline-flex items-center gap-2 rounded-full bg-mineral-300 px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-950 transition-all hover:bg-mineral-200 active:scale-[0.99]"
-          >
-            <UserCog size={13} />
-            Completar perfil
-          </Link>
-        </div>
-      )}
-
-      {/* Estado de error */}
-      {!isPending && state === "error" && (
-        <div className="mt-6 space-y-4">
-          <p className="text-sm text-ember-500">
-            No se pudo conectar con la IA. Comprueba tu conexión o inténtalo de nuevo.
-          </p>
-          <button
-            onClick={handleGenerate}
-            className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-300 transition-colors hover:text-ink-50"
-          >
-            <RefreshCw size={12} />
-            Reintentar
-          </button>
-        </div>
-      )}
-
-      {/* Estado de éxito */}
-      {!isPending && state === "idle" && feedback && (
-        <div className="mt-6 space-y-5">
-          <FeedbackRow
-            icon={<Zap size={16} />}
-            label="Motivación"
-            text={feedback.motivationalMessage}
-          />
-          <div className="hairline" />
-          <FeedbackRow
-            icon={<TrendingUp size={16} />}
-            label="Volumen"
-            text={feedback.volumeAnalysis}
-          />
-          <div className="hairline" />
-          <FeedbackRow
-            icon={<Brain size={16} />}
-            label="Próximo entreno"
-            text={feedback.nextSessionAdvice}
-          />
-          <div className="hairline" />
-          <AdherenceBar score={feedback.adherenceScore} />
-
-          <button
-            onClick={handleGenerate}
-            className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400 transition-colors hover:text-ink-200"
-          >
-            <RefreshCw size={11} />
-            Actualizar análisis
-          </button>
-        </div>
-      )}
-
-      {/* Estado inicial */}
-      {!isPending && state === "idle" && !feedback && (
-        <div className="mt-6 space-y-5">
-          <p className="text-sm text-ink-200">
-            Analiza tus últimas sesiones, rutinas y objetivos para recibir un
-            diagnóstico personalizado de tu semana.
-          </p>
-          <button
-            onClick={handleGenerate}
-            disabled={isPending}
-            className="inline-flex items-center gap-2 rounded-full bg-mineral-300 px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-950 transition-all hover:bg-mineral-200 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+            href="/coach"
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-mineral-300 px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-950 transition-all hover:bg-mineral-200 active:scale-[0.99]"
           >
             <Brain size={13} />
-            Generar feedback semanal
-          </button>
-        </div>
+            Ir al coach
+          </Link>
+        </>
+      ) : (
+        <>
+          {/* Score + motivational */}
+          <div className="mt-4 flex items-start gap-4">
+            <div className="shrink-0">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-800 ring-1 ring-white/10">
+                <p className={`font-display text-xl leading-none ${scoreColor(insight.feedback.adherenceScore).replace("bg-", "text-")}`}>
+                  {insight.feedback.adherenceScore}
+                </p>
+              </div>
+              <p className="mt-1 text-center font-mono text-[9px] text-ink-500">
+                {scoreLabel(insight.feedback.adherenceScore)}
+              </p>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm leading-relaxed text-ink-100 line-clamp-3">
+                {insight.feedback.motivationalMessage}
+              </p>
+            </div>
+          </div>
+
+          {/* Adherence bar */}
+          <div className="mt-5">
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-400">
+                Consistencia
+              </p>
+              <span className="font-mono text-[10px] text-ink-300">
+                {insight.feedback.adherenceScore}/10
+              </span>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-700">
+              <div
+                className={`h-full rounded-full transition-all duration-700 ${scoreColor(insight.feedback.adherenceScore)}`}
+                style={{ width: `${insight.feedback.adherenceScore * 10}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Today's plan highlight */}
+          {(() => {
+            const todayPlan = insight.feedback.weekPlan.find((d) => d.dayOfWeek === today);
+            if (!todayPlan) return null;
+            return (
+              <div className="mt-5 rounded-xl bg-ink-800/60 px-4 py-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-400">
+                  Hoy · {getDayLongLabel(today)}
+                </p>
+                <p className="mt-1 text-sm font-medium text-ink-100">{todayPlan.focus}</p>
+                {todayPlan.routineName && (
+                  <p className="mt-0.5 font-mono text-[10px] text-mineral-400">{todayPlan.routineName}</p>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* CTA */}
+          <div className="mt-5">
+            <Link
+              href="/coach"
+              className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-mineral-400 transition-colors hover:text-mineral-200"
+            >
+              Ver informe completo
+              <ArrowRight size={11} />
+            </Link>
+          </div>
+        </>
       )}
     </article>
   );

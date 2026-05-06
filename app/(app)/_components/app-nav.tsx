@@ -18,6 +18,7 @@ const ITEMS: readonly NavItem[] = [
   { href: "/rutinas", label: "Rutinas" },
   { href: "/entrenar", label: "Entrenar" },
   { href: "/progreso", label: "Progreso" },
+  { href: "/coach", label: "Coach" },
 ] as const;
 
 export const AppHeader = ({
