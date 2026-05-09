@@ -1,227 +1,139 @@
-# IronLog
+<div align="center">
+  
+  # 🏋️‍♂️ IronLog
+  
+  **Lift. Log. Level up.**
+  
+  *El rastreador de fitness social definitivo para el entrenamiento de fuerza. Diseña rutinas, registra tus entrenamientos en tiempo real, analiza tu progreso y comparte tu evolución con la comunidad.*
 
-> **Lift. Log. Level up.**  
-> Social fitness tracker for strength training — plan routines, log workouts in real time, analyze your progress, and share your journey.
+  <p align="center">
+    <img src="https://img.shields.io/badge/Next.js_16-Black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js 16" />
+    <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Tailwind_v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+  </p>
+
+</div>
 
 ---
 
-## Mockups
+## 📱 Vistazo Rápido (Mockups)
 
-### Desktop
-
-<!-- Añade aquí las capturas de escritorio. Ejemplo:
-![Dashboard desktop](docs/mockups/desktop-dashboard.png)
-![Entrenar desktop](docs/mockups/desktop-entrenar.png)
-![Progreso desktop](docs/mockups/desktop-progreso.png)
--->
-
-| Dashboard | Entrenar | Progreso |
-|:---------:|:--------:|:--------:|
-| _próximamente_ | _próximamente_ | _próximamente_ |
-
-### Móvil
-
-<!-- Añade aquí las capturas de móvil. Ejemplo:
-<p align="center">
-  <img src="docs/mockups/mobile-dashboard.png" width="200" />
-  <img src="docs/mockups/mobile-entrenar.png" width="200" />
-  <img src="docs/mockups/mobile-progreso.png" width="200" />
-  <img src="docs/mockups/mobile-profile.png" width="200" />
-</p>
--->
+<details open>
+<summary>💻 Ver vistas de Escritorio</summary>
+<br>
 
 <p align="center">
-  <em>Mockups de móvil — próximamente</em>
+  <strong>Dashboard</strong><br>
+  <img src="docs/mockups/mockup_ordenador_1.png" width="90%" alt="Dashboard Desktop" />
+</p>
+<br>
+
+<p align="center">
+  <strong>Entrenar</strong><br>
+  <img src="docs/mockups/mockup_ordenador_2.png" width="90%" alt="Entrenar Desktop" />
+</p>
+<br>
+
+<p align="center">
+  <strong>Progreso</strong><br>
+  <img src="docs/mockups/mockup_ordenador_3.png" width="90%" alt="Progreso Desktop" />
 </p>
 
----
+</details>
 
-## Características
-
-- **Rutinas** — Diseña plantillas de entrenamiento y asígnalas a días de la semana.
-- **Sesiones en vivo** — Inicia un entrenamiento desde una rutina, añade ejercicios sobre la marcha y registra series en tiempo real.
-- **Tipos de ejercicio** — Soporte para fuerza (peso × reps), peso corporal, isométrico (tiempo) y cardio (distancia).
-- **PRs automáticos** — Detección y ranking automático de récords personales por ejercicio; los anteriores se degradan al superarlos.
-- **Progreso y analítica** — Dashboard con volumen semanal, heatmap de actividad, distribución muscular, curvas de progreso por ejercicio y feed de PRs.
-- **Social** — Seguir usuarios, solicitudes de seguimiento para perfiles privados, feed de actividad de seguidos.
-- **Perfiles** — Bio, estadísticas, control de privacidad, historial de sesiones público/privado.
-
----
-
-## Stack tecnológico
-
-| Capa | Tecnología |
-|------|-----------|
-| Framework | [Next.js 16](https://nextjs.org) (App Router, Turbopack) |
-| Lenguaje | TypeScript 5 |
-| UI | React 19, Tailwind CSS v4 |
-| Backend / Auth / DB | [Supabase](https://supabase.com) (PostgreSQL + RLS + Auth) |
-| Mutaciones | Next.js Server Actions (`"use server"`) |
-| Formularios | `useActionState` + `useFormStatus` (React 19) |
-| Testing | Vitest + Testing Library + jsdom |
-| Linting | ESLint 9 (`eslint-config-next`) |
-| Gestor de paquetes | npm |
-
-> No se usa shadcn/ui, React Query, tRPC, Jest, MSW ni rutas `/api`.
+<details open>
+<summary>📱 Ver vistas Móviles</summary>
+<br>
+<p align="center">
+  <img src="docs/mockups/mockup_movil_1.png" width="500" alt="Mobile Dashboard" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/mockups/mockup_movil_2.png" width="500" alt="Mobile Entrenar" />
+</p>
+</details>
 
 ---
 
-## Estructura del proyecto
+## ✨ Características Principales
 
-```
-.
-├── app/
-│   ├── layout.tsx                  # Root — fuentes + metadatos
-│   ├── page.tsx                    # Landing pública
-│   ├── globals.css                 # @theme Tailwind v4, aurora, grain, hairline
-│   ├── (auth)/                     # Páginas sin autenticar
-│   │   ├── actions.ts              # signIn / signUp / signOut / OAuth / reset
-│   │   └── login/ register/ forgot-password/ update-password/
-│   ├── (app)/                      # Shell autenticado
-│   │   ├── layout.tsx              # Redirige a /login si no hay sesión
-│   │   ├── dashboard/              # Resumen personalizado
-│   │   ├── entrenar/               # Hub de entrenamientos y sesión en vivo
-│   │   │   └── [sessionId]/        # Editor de sesión activa
-│   │   │       └── historial/[sessionId]/  # Detalle / edición de sesión pasada
-│   │   ├── rutinas/                # Biblioteca de rutinas
-│   │   │   └── [id]/               # Detalle de rutina
-│   │   ├── progreso/               # Analítica y PRs
-│   │   ├── profile/                # Perfil propio + solicitudes
-│   │   └── u/[username]/           # Perfil público de otro usuario
-│   └── auth/callback/              # OAuth / magic-link callback
-├── components/
-│   ├── brand/logo.tsx
-│   └── ui/                         # field, submit-button, google-button, separator…
-├── lib/supabase/
-│   ├── client.ts                   # createBrowserClient
-│   ├── server.ts                   # createServerClient (RSC / Server Actions)
-│   └── middleware.ts               # Refresco de sesión
-├── proxy.ts                        # Proxy Next 16 — reemplaza middleware.ts
-├── supabase/migrations/            # Migraciones SQL (fuente de verdad del esquema)
-└── tests/                          # Vitest
-```
+IronLog no es solo una app de notas para el gimnasio, es tu compañero completo de entrenamiento:
+
+- 📋 **Rutinas Personalizadas** — Diseña tus propias plantillas de entrenamiento y asígnalas estratégicamente a los días de la semana.
+- ⚡ **Sesiones en Vivo** — Empieza a entrenar con un solo clic. Añade ejercicios sobre la marcha y registra tus series, repeticiones y pesos en tiempo real.
+- 🏋️ **Flexibilidad Total** — Soporte nativo para ejercicios de fuerza (peso × reps), peso corporal, isométricos (tiempo) y cardio (distancia).
+- 🏆 **Récords Personales (PRs) Inteligentes** — Detección automática de tus mejores marcas por ejercicio. ¡Celebra tus victorias mientras los PRs antiguos se degradan automáticamente!
+- 📊 **Analítica Avanzada** — Visualiza tu éxito con un dashboard completo: volumen semanal, mapa de calor (heatmap) de actividad, distribución muscular y curvas de progreso detalladas.
+- 🤝 **Ecosistema Social** — Mantén la motivación alta. Sigue a tus amigos (con soporte para perfiles privados), revisa el feed de actividad y comparte tus logros.
 
 ---
 
-## Base de datos
+## 🛠 Stack Tecnológico
 
-Tablas principales gestionadas por Supabase + RLS:
+IronLog está construido con las últimas tecnologías del ecosistema web para garantizar un rendimiento ultrarrápido y una experiencia de desarrollador de primer nivel:
+
+* **Framework:** [Next.js 16](https://nextjs.org) (App Router, Turbopack)
+* **Lenguaje:** TypeScript 5
+* **Interfaz:** React 19, Tailwind CSS v4
+* **Backend & Auth:** [Supabase](https://supabase.com) (PostgreSQL + RLS + Auth)
+* **Mutaciones de Datos:** Next.js Server Actions (`"use server"`)
+* **Gestión de Formularios:** `useActionState` + `useFormStatus` (React 19)
+* **Testing:** Vitest + Testing Library + jsdom
+
+> 💡 **Minimalismo Técnico:** Este proyecto abraza la simplicidad nativa de Next.js. **No** utilizamos dependencias pesadas como shadcn/ui, React Query, tRPC, Jest, MSW ni rutas `/api` tradicionales.
+
+---
+
+## 🎨 Filosofía de Diseño
+
+El diseño de IronLog es **oscuro, editorial y con estilo Apple**. 
+Todos los *tokens* de diseño viven en `app/globals.css` utilizando el nuevo sistema `@theme` de Tailwind v4.
+
+| Elemento | Descripción |
+| :--- | :--- |
+| **Neutrales** | `ink-50` a `ink-950` (Del blanco roto a un negro profundo). |
+| **Acentos** | `mineral` (verde brillante para CTAs) y `ember` (rojo cálido para alertas/destrucción). |
+| **Tipografía** | Titulares elegantes con serif (**Instrument**) y cuerpos ultra legibles con sans (**Geist**). |
+| **Efectos UI** | Clases de utilidad únicas como `.aurora` (fondos animados), `.grid-texture` y `.hairline` (bordes sutiles de 1px). |
+
+---
+
+## 🗄️ Arquitectura de Base de Datos
+
+Gobernada por Supabase y protegida férreamente por **Row Level Security (RLS)**.
+
+<details>
+<summary>Ver esquema de tablas principales</summary>
 
 | Tabla | Propósito |
 |-------|-----------|
-| `profiles` | Metadatos de usuario (sincronizado con `auth.users` por trigger) |
-| `exercises` | Catálogo global de ejercicios (seed incluido) |
-| `routines` | Plantillas de entrenamiento por usuario |
-| `routine_exercises` | Ejercicios de una plantilla (con índice de orden) |
-| `sessions` | Sesiones reales (`active` / `completed` / `discarded`) |
-| `session_exercises` | Ejercicios de una sesión |
-| `sets` | Series individuales con reps, peso, tiempo o distancia |
-| `follows` | Grafo social (`pending` / `accepted`) |
+| `profiles` | Metadatos de usuario (sincronización automática con `auth.users`). |
+| `exercises` | Catálogo global de ejercicios (incluye seed inicial). |
+| `routines` | Plantillas de entrenamiento guardadas por cada usuario. |
+| `routine_exercises`| Relación de ejercicios dentro de una plantilla (ordenados). |
+| `sessions` | Registro de sesiones (`active`, `completed`, `discarded`). |
+| `session_exercises`| Los ejercicios realizados en una sesión específica. |
+| `sets` | El nivel más granular: series con reps, peso, tiempo o distancia. |
+| `follows` | Grafo social para la red de usuarios (`pending`, `accepted`). |
 
-**Decisiones de diseño clave:**
+⚡ **Magia en el Backend:** - Denormalización inteligente: El `user_id` se inyecta automáticamente en relaciones profundas vía triggers.
+- Cálculo de PRs: La columna `sets.is_pr` se calcula silenciosamente mediante un trigger `BEFORE INSERT`.
+- Seguridad Total: Las consultas desde el cliente confían ciegamente en el RLS de Supabase.
 
-- `user_id` está denormalizado en `routine_exercises`, `session_exercises` y `sets` mediante triggers — no lo escribas manualmente en inserciones.
-- `sets.is_pr` es calculado por un trigger `BEFORE INSERT`; no lo establezcas tú.
-- RLS en todas las tablas — las consultas del cliente no necesitan `.eq("user_id", uid)`.
-
----
-
-## Diseño
-
-Oscuro, editorial, estilo Apple. Todos los tokens viven en `app/globals.css` dentro de `@theme {}`.
-
-| Token | Uso |
-|-------|-----|
-| `ink-50 … ink-950` | Escala de neutrales (blanco sucio → casi negro) |
-| `mineral-50 … mineral-700` | Acento verde — CTAs, focus rings, eyebrows |
-| `ember-400 / ember-500` | Acento rojo cálido — acciones destructivas, errores |
-| `font-display` | Serif (Instrument) — titulares |
-| `font-sans` | Sans (Geist) — cuerpo |
-| `font-mono` | Mono (Geist Mono) — etiquetas `10–11px uppercase tracking-widest` |
-
-Utilidades especiales: `.aurora` (fondo animado), `.grid-texture`, `.hairline` (borde 1 px sutil).
+</details>
 
 ---
 
-## Primeros pasos
+## 🚀 Primeros Pasos
 
-### Requisitos previos
+¿Quieres correr IronLog en tu máquina local? Es muy sencillo:
 
-- Node.js ≥ 18
-- Una cuenta y proyecto en [Supabase](https://supabase.com)
+### 1. Requisitos previos
+* [Node.js](https://nodejs.org/) (v18 o superior)
+* Proyecto activo en [Supabase](https://supabase.com)
 
-### Instalación
+### 2. Instalación
 
 ```bash
-git clone https://github.com/tu-usuario/ironlog.git
+git clone [https://github.com/tu-usuario/ironlog.git](https://github.com/tu-usuario/ironlog.git)
 cd ironlog
 npm install
-```
-
-### Variables de entorno
-
-Crea un archivo `.env.local` en la raíz:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://<tu-proyecto>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<tu-anon-key>
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
-
-### Migraciones
-
-Aplica las migraciones a tu proyecto Supabase:
-
-```bash
-supabase db push
-# o desde el dashboard de Supabase, ejecuta los archivos en supabase/migrations/ en orden
-```
-
-### Servidor de desarrollo
-
-```bash
-npm run dev
-```
-
-Abre [http://localhost:3000](http://localhost:3000).
-
----
-
-## Comandos
-
-| Comando | Descripción |
-|---------|-------------|
-| `npm run dev` | Servidor de desarrollo (Turbopack) |
-| `npm run build` | Build de producción |
-| `npm run start` | Servidor de producción |
-| `npm run lint` | Ejecutar ESLint |
-| `npm run test` | Ejecutar tests (Vitest) |
-| `npm run test:watch` | Tests en modo watch |
-
----
-
-## Tests
-
-```bash
-npm run test
-```
-
-Los tests viven en `tests/`. El patrón de referencia para mockear Supabase está en `tests/actions.test.ts`.
-
----
-
-## Despliegue
-
-La forma más sencilla es [Vercel](https://vercel.com):
-
-1. Importa el repositorio en Vercel.
-2. Añade las variables de entorno (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`).
-3. Despliega — Vercel detecta Next.js automáticamente.
-
-Cualquier plataforma compatible con Node.js y el output de `next build` también funciona (Railway, Render, etc.).
-
----
-
-## Licencia
-
-MIT
