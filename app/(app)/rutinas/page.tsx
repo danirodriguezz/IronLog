@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentWeekDays } from "@/lib/week";
 import { CreateRoutineDialog } from "./_components/create-routine-dialog";
+import { AIRoutineDialog } from "./_components/ai-routine-dialog";
 import { WeekBoard, type RoutineCard } from "./_components/week-board";
 
 type RoutineRow = {
@@ -59,7 +60,10 @@ const RutinasPage = async (): Promise<React.ReactElement> => {
               <Stat label="En banco" value={cards.length - assignedCount} />
             </>
           )}
-          <div className="flex items-stretch">
+          <div className="flex items-stretch gap-3">
+            <div className="self-end">
+              <AIRoutineDialog routineCount={cards.length} />
+            </div>
             <div className="self-end">
               <CreateRoutineDialog variant="primary" />
             </div>

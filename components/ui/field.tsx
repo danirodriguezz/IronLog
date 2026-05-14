@@ -23,7 +23,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(
             id={inputId}
             type={effectiveType}
             placeholder=" "
-            className="peer h-14 w-full rounded-[14px] border border-white/10 bg-ink-800/60 px-4 pt-5 pb-1.5 text-[15px] text-ink-50 outline-none transition-all duration-300 placeholder-transparent hover:border-white/20 focus:border-mineral-400/80 focus:bg-ink-800 focus:ring-4 focus:ring-mineral-400/10"
+            className="peer h-14 w-full rounded-md border border-white/10 bg-ink-800/60 px-4 pt-5 pb-1.5 text-[15px] text-ink-50 outline-none transition-all duration-300 placeholder-transparent hover:border-white/20 focus:border-mineral-400/80 focus:bg-ink-800 focus:ring-4 focus:ring-mineral-400/10"
             {...props}
           />
           <label

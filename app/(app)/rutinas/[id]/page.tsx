@@ -5,6 +5,7 @@ import { AddExerciseForm, type ExerciseOption } from "./_components/add-exercise
 import { AddExerciseTrigger } from "./_components/add-exercise-trigger";
 import { RemoveExerciseButton } from "./_components/remove-exercise-button";
 import { DeleteRoutineButton } from "./_components/delete-routine-button";
+import { AIRoutineDialog } from "../_components/ai-routine-dialog";
 
 type RoutineExerciseRow = {
   id: string;
@@ -96,7 +97,10 @@ const RoutineDetailPage = async ({
             <p className="max-w-xl text-ink-200">{routine.description}</p>
           ) : null}
         </div>
-        <DeleteRoutineButton id={routine.id} />
+        <div className="flex items-center gap-2 shrink-0">
+          <AIRoutineDialog routineId={routine.id} />
+          <DeleteRoutineButton id={routine.id} />
+        </div>
       </section>
 
       <section className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px]">
