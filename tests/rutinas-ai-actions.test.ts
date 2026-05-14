@@ -296,14 +296,14 @@ describe("generateRoutinePlan", () => {
           exerciseName: "Ejercicio ajeno",
           kind: "increase_weight",
           rationale: "El modelo inventó este id.",
-          proposed: { target_sets: null, target_reps: null, target_weight_kg: 100, target_duration_seconds: null, notes: null },
+          target_sets: null, target_reps: null, target_weight_kg: 100, target_duration_seconds: null, notes: null,
         },
         {
           routineExerciseId: "re-1",
           exerciseName: "Press de banca",
           kind: "increase_weight",
           rationale: "Superando meseta.",
-          proposed: { target_sets: null, target_reps: null, target_weight_kg: 85, target_duration_seconds: null, notes: null },
+          target_sets: null, target_reps: null, target_weight_kg: 85, target_duration_seconds: null, notes: null,
         },
       ],
     };
@@ -425,7 +425,7 @@ describe("applyAIRoutinePlan", () => {
           exerciseName: "Press de banca",
           kind: "increase_weight",
           rationale: "Superando meseta.",
-          proposed: { target_sets: null, target_reps: null, target_weight_kg: 85, target_duration_seconds: null, notes: null },
+          target_sets: null, target_reps: null, target_weight_kg: 85, target_duration_seconds: null, notes: null,
         },
       ],
     };
@@ -453,7 +453,7 @@ describe("applyAIRoutinePlan", () => {
           exerciseName: "Press de banca",
           kind: "decrease_weight",
           rationale: "Ajuste técnico.",
-          proposed: { target_sets: null, target_reps: null, target_weight_kg: 70, target_duration_seconds: null, notes: null },
+          target_sets: null, target_reps: null, target_weight_kg: 70, target_duration_seconds: null, notes: null,
         },
       ],
     };
@@ -478,7 +478,7 @@ describe("applyAIRoutinePlan", () => {
           exerciseName: "Press de banca",
           kind: "change_reps",
           rationale: "Más reps para definición.",
-          proposed: { target_sets: null, target_reps: 15, target_weight_kg: null, target_duration_seconds: null, notes: null },
+          target_sets: null, target_reps: 15, target_weight_kg: null, target_duration_seconds: null, notes: null,
         },
       ],
     };
@@ -502,7 +502,7 @@ describe("applyAIRoutinePlan", () => {
           exerciseName: "Press inclinado",
           kind: "change_sets",
           rationale: "Más series.",
-          proposed: { target_sets: 4, target_reps: null, target_weight_kg: null, target_duration_seconds: null, notes: null },
+          target_sets: 4, target_reps: null, target_weight_kg: null, target_duration_seconds: null, notes: null,
         },
       ],
     };
@@ -526,7 +526,7 @@ describe("applyAIRoutinePlan", () => {
           exerciseName: "Press de banca",
           kind: "add_note",
           rationale: "Indicación técnica.",
-          proposed: { target_sets: null, target_reps: null, target_weight_kg: null, target_duration_seconds: null, notes: "Controla 3s bajada." },
+          target_sets: null, target_reps: null, target_weight_kg: null, target_duration_seconds: null, notes: "Controla 3s bajada.",
         },
       ],
     };
@@ -550,7 +550,7 @@ describe("applyAIRoutinePlan", () => {
           exerciseName: "Press inclinado",
           kind: "remove",
           rationale: "Ejercicio redundante.",
-          proposed: { target_sets: null, target_reps: null, target_weight_kg: null, target_duration_seconds: null, notes: null },
+          target_sets: null, target_reps: null, target_weight_kg: null, target_duration_seconds: null, notes: null,
         },
       ],
     };
@@ -578,7 +578,7 @@ describe("applyAIRoutinePlan", () => {
           exerciseName: "Ejercicio ajeno",
           kind: "increase_weight",
           rationale: "ID inventado.",
-          proposed: { target_sets: null, target_reps: null, target_weight_kg: 100, target_duration_seconds: null, notes: null },
+          target_sets: null, target_reps: null, target_weight_kg: 100, target_duration_seconds: null, notes: null,
         },
       ],
     };
@@ -608,7 +608,7 @@ describe("applyAIRoutinePlan", () => {
           exerciseName: "Press de banca",
           kind: "increase_weight",
           rationale: "Sugerencia sin datos.",
-          proposed: { target_sets: null, target_reps: null, target_weight_kg: null, target_duration_seconds: null, notes: null },
+          target_sets: null, target_reps: null, target_weight_kg: null, target_duration_seconds: null, notes: null,
         },
       ],
     };
@@ -933,7 +933,7 @@ describe("applyAIRoutinePlan", () => {
           exerciseName: "Press de banca",
           kind: "change_reps",
           rationale: "Más reps.",
-          proposed: { target_sets: null, target_reps: 15, target_weight_kg: null, target_duration_seconds: null, notes: null },
+          target_sets: null, target_reps: 15, target_weight_kg: null, target_duration_seconds: null, notes: null,
         },
       ],
       additions: [

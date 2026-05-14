@@ -85,7 +85,7 @@ const RoutineDetailPage = async ({
         ← Rutinas
       </Link>
 
-      <section className="mt-6 flex items-start justify-between gap-6">
+      <section className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
         <div className="space-y-3">
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-mineral-300">
             Rutina
@@ -97,7 +97,7 @@ const RoutineDetailPage = async ({
             <p className="max-w-xl text-ink-200">{routine.description}</p>
           ) : null}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex w-full items-center gap-2 sm:w-auto sm:shrink-0">
           <AIRoutineDialog routineId={routine.id} />
           <DeleteRoutineButton id={routine.id} />
         </div>

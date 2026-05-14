@@ -9,7 +9,7 @@ const Inner = (): React.ReactElement => {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-full border border-ember-500/30 px-4 py-1.5 text-[12px] font-mono uppercase tracking-[0.2em] text-ember-400 transition-colors hover:bg-ember-500/10 disabled:opacity-50"
+      className="flex-1 sm:flex-none rounded-md border border-ember-500/30 px-4 py-2.5 text-[12px] font-mono uppercase tracking-[0.2em] text-ember-400 transition-colors hover:bg-ember-500/10 disabled:opacity-50"
     >
       {pending ? "Eliminando…" : "Eliminar rutina"}
     </button>

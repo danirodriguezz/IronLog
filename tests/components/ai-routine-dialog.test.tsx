@@ -39,14 +39,14 @@ const richPlan: AIRoutinePlan = {
       exerciseName: "Press de banca",
       kind: "change_reps",
       rationale: "Más reps para tonificación.",
-      proposed: { target_sets: null, target_reps: 15, target_weight_kg: null, target_duration_seconds: null, notes: null },
+      target_sets: null, target_reps: 15, target_weight_kg: null, target_duration_seconds: null, notes: null,
     },
     {
       routineExerciseId: "re-2",
       exerciseName: "Sentadilla",
       kind: "remove",
       rationale: "Eliminar para reducir volumen.",
-      proposed: { target_sets: null, target_reps: null, target_weight_kg: null, target_duration_seconds: null, notes: null },
+      target_sets: null, target_reps: null, target_weight_kg: null, target_duration_seconds: null, notes: null,
     },
   ],
   additions: [

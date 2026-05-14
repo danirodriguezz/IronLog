@@ -67,13 +67,13 @@ const KindIcon = ({ kind }: { kind: string }): React.ReactElement => {
   }
 };
 
-const proposedSummary = (proposed: AIRoutinePlan["modifications"][number]["proposed"]): string => {
+const proposedSummary = (mod: AIRoutinePlan["modifications"][number]): string => {
   const parts: string[] = [];
-  if (proposed.target_weight_kg != null) parts.push(`${proposed.target_weight_kg}kg`);
-  if (proposed.target_reps != null) parts.push(`${proposed.target_reps} reps`);
-  if (proposed.target_sets != null) parts.push(`${proposed.target_sets} series`);
-  if (proposed.target_duration_seconds != null) parts.push(`${proposed.target_duration_seconds}s`);
-  if (proposed.notes) parts.push(`"${proposed.notes}"`);
+  if (mod.target_weight_kg != null) parts.push(`${mod.target_weight_kg}kg`);
+  if (mod.target_reps != null) parts.push(`${mod.target_reps} reps`);
+  if (mod.target_sets != null) parts.push(`${mod.target_sets} series`);
+  if (mod.target_duration_seconds != null) parts.push(`${mod.target_duration_seconds}s`);
+  if (mod.notes) parts.push(`"${mod.notes}"`);
   return parts.join(" · ");
 };
 
@@ -166,7 +166,7 @@ const PlanPreview = ({ plan }: { plan: AIRoutinePlan }): React.ReactElement => {
           </p>
           <ul className="space-y-2">
             {plan.modifications.map((mod, i) => {
-              const summary = proposedSummary(mod.proposed);
+              const summary = proposedSummary(mod);
               return (
                 <li
                   key={i}
@@ -548,7 +548,7 @@ export const AIRoutineDialog = ({ routineCount, routineId }: Props): React.React
         onClick={() => !isDisabled && setOpen(true)}
         title={isDisabled ? "Crea una rutina primero" : undefined}
         disabled={isDisabled}
-        className="hairline inline-flex items-center gap-2 rounded-md bg-ink-900/50 px-4 py-2.5 text-sm text-ink-100 transition-colors hover:bg-ink-800/80 focus:outline-none focus:ring-1 focus:ring-mineral-300 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="hairline inline-flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-[14px] bg-ink-900/50 px-4 py-2.5 text-sm text-ink-100 transition-colors hover:bg-ink-800/80 focus:outline-none focus:ring-1 focus:ring-mineral-300 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <Sparkles size={14} />
         Modificar con IA

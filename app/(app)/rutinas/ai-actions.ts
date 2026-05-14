@@ -32,13 +32,11 @@ const exerciseModificationSchema = z.object({
     "remove",
   ]),
   rationale: z.string(),
-  proposed: z.object({
-    target_sets: z.number().int().positive().nullable(),
-    target_reps: z.number().int().positive().nullable(),
-    target_weight_kg: z.number().positive().nullable(),
-    target_duration_seconds: z.number().int().positive().nullable(),
-    notes: z.string().nullable(),
-  }),
+  target_sets: z.number().int().positive().nullable(),
+  target_reps: z.number().int().positive().nullable(),
+  target_weight_kg: z.number().positive().nullable(),
+  target_duration_seconds: z.number().int().positive().nullable(),
+  notes: z.string().nullable(),
 });
 
 const exerciseAdditionSchema = z.object({
@@ -222,6 +220,8 @@ ${catalogSummary}
 
 INSTRUCCIONES:
 1. modifications: Modifica ejercicios existentes usando [reid:xxx] exactamente. Solo si hay razón clara.
+   - Cada modificación tiene los campos target_sets, target_reps, target_weight_kg, target_duration_seconds, notes directamente (NO anidados).
+   - Pon null en los campos que no apliquen (ej: increase_weight → target_weight_kg tiene valor, el resto null).
 2. additions: Para añadir un ejercicio a una rutina existente, usa el (rid:xxx) exacto y el nombre EXACTO del catálogo.
 3. newRoutines: Crea nuevas rutinas solo si el objetivo lo requiere y hay días libres. Usa nombres del catálogo.
 4. summary: 2-3 frases en español explicando el plan y por qué se adapta al objetivo.
@@ -404,23 +404,23 @@ export const applyAIRoutinePlan = async (
     switch (mod.kind) {
       case "increase_weight":
       case "decrease_weight":
-        if (mod.proposed.target_weight_kg != null) {
-          updatePayload = { target_weight_kg: mod.proposed.target_weight_kg };
+        if (mod.target_weight_kg != null) {
+          updatePayload = { target_weight_kg: mod.target_weight_kg };
         }
         break;
       case "change_reps":
-        if (mod.proposed.target_reps != null) {
-          updatePayload = { target_reps: mod.proposed.target_reps };
+        if (mod.target_reps != null) {
+          updatePayload = { target_reps: mod.target_reps };
         }
         break;
       case "change_sets":
-        if (mod.proposed.target_sets != null) {
-          updatePayload = { target_sets: mod.proposed.target_sets };
+        if (mod.target_sets != null) {
+          updatePayload = { target_sets: mod.target_sets };
         }
         break;
       case "add_note":
-        if (mod.proposed.notes != null) {
-          updatePayload = { notes: mod.proposed.notes };
+        if (mod.notes != null) {
+          updatePayload = { notes: mod.notes };
         }
         break;
     }
